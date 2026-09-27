@@ -160,11 +160,12 @@ async function connectCloud(){
 /* ---------- AI: claude.ai (artifact) or the person's own free key (phone app) ---------- */
 let sampler = null, aiState = "wait"; /* wait | ok | none | denied */
 let busy = 0;
+function setBusyNote(txt){ document.querySelectorAll(".gen-note").forEach(el => { if (txt || el.dataset.retry) el.textContent = txt; el.dataset.retry = txt ? "1" : ""; }); }
 function setBusy(d){ busy = Math.max(0, busy + d); document.body.classList.toggle("thinking", busy > 0); }
 if (window.claude && claude.use){ claude.use("sample").then(fn => { sampler = fn; aiState = fn ? "ok" : "none"; route(); }).catch(() => { aiState = "none"; route(); }); }
 else aiState = "none";
 const PROVIDERS = {
-  gemini:{label:"Google Gemini", free:true, keyUrl:"https://aistudio.google.com/apikey", models:["gemini-flash-latest","gemini-2.5-flash","gemini-2.0-flash"]},
+  gemini:{label:"Google Gemini", free:true, keyUrl:"https://aistudio.google.com/apikey", models:["gemini-flash-latest","gemini-2.5-flash","gemini-flash-lite-latest","gemini-2.5-flash-lite","gemini-2.0-flash"]},
   openrouter:{label:"OpenRouter", free:true, keyUrl:"https://openrouter.ai/keys", url:"https://openrouter.ai/api/v1/chat/completions", models:["deepseek/deepseek-chat-v3-0324:free","meta-llama/llama-3.3-70b-instruct:free"]},
   groq:{label:"Groq", free:true, keyUrl:"https://console.groq.com/keys", url:"https://api.groq.com/openai/v1/chat/completions", models:["llama-3.3-70b-versatile"]},
   claude:{label:"Claude API", free:false, keyUrl:"https://console.anthropic.com/settings/keys", models:["claude-opus-5"]}
@@ -178,6 +179,7 @@ function errText(e){
   if (c === "no_key") return t("err_nokey");
   if (c === "bad_key") return t("err_key");
   if (c === "net") return t("err_net");
+  if (c === "overloaded") return t("err_busy");
   if (c === "rate_limited") return t("err_rate");
   if (c === "session_expired") return t("err_session");
   if (c === "refused") return t("err_refused");
@@ -208,6 +210,7 @@ async function httpJSON(url, init){
   if (!r.ok){
     const msg = (j && (j.error && (j.error.message || j.error.status) || j.message)) || ("HTTP " + r.status);
     if (r.status === 401 || r.status === 403 || (r.status === 400 && /api.?key|API_KEY/i.test(msg))) throw {code:"bad_key", message:msg};
+    if (r.status === 503 || r.status === 500 || r.status === 502 || r.status === 504 || /overloaded|high demand|UNAVAILABLE|try again later/i.test(msg)) throw {code:"overloaded", message:msg};
     if (r.status === 429) throw {code:"rate_limited", message:msg};
     if (r.status === 404) throw {code:"no_model", message:msg};
     if (r.status === 413) throw {code:"prompt_too_large", message:msg};
@@ -215,14 +218,17 @@ async function httpJSON(url, init){
   }
   return j || {};
 }
+const goodModel = {}; /* the model that last answered, tried first while others are overloaded */
 async function callKey(input, opt){
   const P = PROVIDERS[aiCfg.provider] || PROVIDERS.gemini, turns = toTurns(input);
   const jsonHint = opt.json ? "\n\n(Output: one valid JSON value only, no markdown fences, no commentary.)" : "";
   turns[turns.length - 1].content += jsonHint;
   const models = aiCfg.model ? [aiCfg.model].concat(P.models) : P.models;
   let lastErr = null;
-  for (const model of [...new Set(models)]){
-    try {
+  const list = [...new Set((goodModel[aiCfg.provider] ? [goodModel[aiCfg.provider]] : []).concat(models))];
+  for (let mi = 0; mi < list.length; mi++){
+    const model = list[mi];
+    for (let attempt = 0; attempt < 2; attempt++) try {
       let text = "";
       if (aiCfg.provider === "gemini" || !PROVIDERS[aiCfg.provider]){
         const body = {contents:turns.map(m => ({role:m.role === "assistant" ? "model" : "user", parts:[{text:m.content}]})), generationConfig:Object.assign({temperature:0.8, maxOutputTokens:32768}, opt.json ? {responseMimeType:"application/json"} : {})};
@@ -246,11 +252,18 @@ async function callKey(input, opt){
       }
       text = String(text).trim();
       if (!text) throw {code:"upstream_error", message:"empty answer"};
+      setBusyNote(""); goodModel[aiCfg.provider] = model;
       if (opt.onText) try { opt.onText({text, delta:text}); } catch(e){}
       if (opt.json) return parseLoose(text);
       return {text, truncated:false};
-    } catch(e){ lastErr = e; if (!e || e.code !== "no_model") throw e; }
+    } catch(e){
+      lastErr = e;
+      if (!e || (e.code !== "no_model" && e.code !== "overloaded" && e.code !== "rate_limited")) throw e;
+      if (e.code === "overloaded" && attempt === 0){ setBusyNote(t("ai_retrying")); await new Promise(r => setTimeout(r, 1500)); continue; }
+      break; /* next model */
+    }
   }
+  setBusyNote("");
   throw lastErr || {code:"upstream_error"};
 }
 async function ask(input, opt){
