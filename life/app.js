@@ -226,7 +226,7 @@ async function callKey(input, opt){
       let text = "";
       if (aiCfg.provider === "gemini" || !PROVIDERS[aiCfg.provider]){
         const body = {contents:turns.map(m => ({role:m.role === "assistant" ? "model" : "user", parts:[{text:m.content}]})), generationConfig:Object.assign({temperature:0.8, maxOutputTokens:32768}, opt.json ? {responseMimeType:"application/json"} : {})};
-        const j = await httpJSON("https://generativelanguage.googleapis.com/v1beta/models/" + encodeURIComponent(model) + ":generateContent?key=" + encodeURIComponent(aiCfg.key), {method:"POST", headers:{"content-type":"application/json"}, body:JSON.stringify(body), signal:opt.signal});
+        const j = await httpJSON("https://generativelanguage.googleapis.com/v1beta/models/" + encodeURIComponent(model) + ":generateContent", {method:"POST", headers:{"content-type":"application/json", "x-goog-api-key":aiCfg.key}, body:JSON.stringify(body), signal:opt.signal});
         const cand = (j.candidates || [])[0];
         if (!cand){ if (j.promptFeedback && j.promptFeedback.blockReason) throw {code:"refused"}; throw {code:"upstream_error", message:"empty answer"}; }
         if (cand.finishReason === "SAFETY" || cand.finishReason === "PROHIBITED_CONTENT") throw {code:"refused"};
@@ -268,7 +268,7 @@ async function ask(input, opt){
 function aiSetupCard(onDone){
   const card = h("section", {class:"card setup"});
   const sel = h("select", {class:"field", id:"aiProv"}, Object.keys(PROVIDERS).map(k => h("option", {value:k, text:PROVIDERS[k].label + (PROVIDERS[k].free ? " · " + t("free") : " · " + t("paid")), selected:aiCfg.provider === k ? true : null})));
-  const key = h("input", {class:"field", id:"aiKey", type:"password", autocomplete:"off", placeholder:t("ai_key_ph"), value:aiCfg.key ? "••••••" + aiCfg.key.slice(-4) : ""});
+  const key = h("input", {class:"field", id:"aiKey", type:"password", autocomplete:"off", placeholder:t("ai_key_ph"), autocapitalize:"off", spellcheck:"false", value:aiCfg.key ? "••••••" + aiCfg.key.slice(-4) : ""});
   const model = h("input", {class:"field", id:"aiModel", autocomplete:"off", placeholder:t("ai_model_ph"), value:aiCfg.model || ""});
   const getKey = h("a", {class:"btn sm", href:PROVIDERS[aiCfg.provider].keyUrl, target:"_blank", rel:"noopener"}, t("ai_get_key"));
   sel.addEventListener("change", () => { getKey.href = PROVIDERS[sel.value].keyUrl; });
