@@ -116,6 +116,11 @@
   };
   var BRIDGE = '<script>window.claude={use:function(n){try{return parent.__hqWild.use(n);}catch(e){return Promise.resolve(null);}}};</' + 'script>';
 
+  /* page 7 keeps its File 05 folder; the question board and its script are left out (questions live in HQ) */
+  function prep(t){
+    return t.replace(/<div class="wb">[\s\S]*?<\/section>(\s*<section class="shot" id="shot8">)/, "</section>$1")
+      .replace(/<script>\s*\/\* ---------- the workbench[\s\S]*?<\/script>/, "");
+  }
   var html = null, blobUrl = null, frame = null, inerted = [], lastFocus = null, noteT = 0;
   function say(kind){
     stage.classList.toggle("ready", kind === "");
@@ -136,7 +141,7 @@
     if (!blobUrl || t !== html){
       if (blobUrl) URL.revokeObjectURL(blobUrl);
       html = t;
-      var doc = t.replace(/<head>/i, function(h){ return h + BRIDGE; });
+      var doc = prep(t).replace(/<head>/i, function(h){ return h + BRIDGE; });
       blobUrl = URL.createObjectURL(new Blob([doc], {type:"text/html"}));
     }
     frame = document.createElement("iframe");
