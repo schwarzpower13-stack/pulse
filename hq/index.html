@@ -347,6 +347,16 @@ body.coach-on .dock-quick[data-act="settings"]{animation:coachPing 1.6s ease-in-
 #lb img,#lb video{max-width:100%;max-height:100%;display:block;box-shadow:0 0 0 1.5px var(--line-2)}
 #lb .lb-x{position:absolute;top:max(12px,env(safe-area-inset-top,0px));right:12px;height:36px;padding:0 14px;border:1.5px solid var(--cream);background:var(--void);color:var(--cream);font:700 10.5px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;cursor:pointer}
 #lb .lb-msg{font:500 12px/1.6 var(--f-mono);color:var(--muted)}
+/* catch-up: what happened since your last visit */
+.catchup{position:relative;z-index:2;display:flex;align-items:center;gap:10px 16px;flex-wrap:wrap;margin:0 0 22px;padding:10px 12px 10px 14px;border:1.5px solid var(--cyan);background:linear-gradient(90deg,rgba(34,228,255,.12),rgba(34,228,255,.02) 60%),var(--panel);box-shadow:6px 6px 0 rgba(34,228,255,.35)}
+.catchup .k{display:flex;align-items:center;gap:8px;font:700 9.5px/1.2 var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--cyan)}
+.catchup .k::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--cyan);box-shadow:0 0 10px var(--cyan);animation:beat 1.6s ease-in-out infinite}
+.catchup .n{display:flex;gap:14px;flex-wrap:wrap;font:600 12.5px/1.3 var(--f-body);color:var(--muted)}
+.catchup .n b{color:var(--text);font-weight:800}
+.catchup .acts{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.catchup .btn{min-height:32px}
+.catchup.alerts{border-color:var(--amber);background:linear-gradient(90deg,rgba(240,168,60,.12),transparent 60%),var(--panel);box-shadow:6px 6px 0 rgba(240,168,60,.35)}
+.catchup.alerts .k{color:var(--amber)} .catchup.alerts .k::before{background:var(--amber);box-shadow:0 0 10px var(--amber)}
 /* up next: the team's run sheet */
 .un-dot{width:8px;height:8px;background:var(--amber);animation:sqBlink 1.4s steps(1) infinite}
 .un-seg{margin-left:auto;display:flex}
@@ -861,6 +871,7 @@ button.opt:disabled{cursor:default}
     <section class="view" id="v-topics" aria-label="Backstage">
       <div class="scroll" id="topics-scroll">
         <div class="home">
+          <div class="catchup" id="catchup" hidden></div>
           <header class="hero2">
             <div class="bokeh" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
             <div class="hero-copy">
@@ -928,7 +939,9 @@ button.opt:disabled{cursor:default}
       <div class="scroll" id="chat-scroll"><div class="chat-in" id="chat-list"></div></div>
       <div class="typing" id="typing"></div>
       <div class="chat-comp">
-        <div class="composer">
+        <div class="att-tray" id="c-att"></div>
+        <div class="composer has-att">
+          <label class="att-btn" title="Add photos or videos"><input type="file" id="c-file" accept="image/*,video/*" multiple aria-label="Add photos or videos"><span id="c-clip"></span></label>
           <textarea id="chat-input" rows="1" placeholder="Message the team…" aria-label="Message"></textarea>
           <button class="send" id="chat-send" aria-label="Send" disabled></button>
         </div>
@@ -1194,13 +1207,16 @@ const S = {
   roster:clone(DEFAULT_ROSTER), claims:{}, threads:[], replyDocs:new Map(), chatDocs:new Map(), markDocs:new Map(), checkins:new Map(), names:new Map(),
   obStep:null, meColor:null,
   loaded:{roster:false, claims:false, threads:false, chat:false},
-  view:"topics", channel:"general", filter:"all", project:"all", q:"", sort:LS.get("sort", "activity"), layout:LS.get("layout", "grid"), unScope:LS.get("unScope", "mine"), unAll:false, onlyMine:false, onlyOpen:false, openId:null,
+  view:"topics", channel:"general", filter:"all", project:"all", q:"", sort:LS.get("sort", "activity"), layout:LS.get("layout", "grid"), unScope:LS.get("unScope", "mine"), unAll:false, onlyNew:false, catchupDone:false, visitAt:0, pingAt:null, onlyMine:false, onlyOpen:false, openId:null,
   mySeat:null, mySrc:null, forceOnboard:false, peers:[], online:new Set(), profiles:{},
   eff:{bySeat:{}, byUid:{}}, idx:null,
   adminDraft:null, adminDirty:false, sugg:{},
   seen:LS.get("seen", null), newKind:"question", coachDone:!!LS.get("coachDone", false),
 };
 if (!S.seen || typeof S.seen !== "object") S.seen = {since:Date.now(), ch:{}, t:{}};
+S.visitAt = LS.get("lastVisit", Date.now());
+setInterval(() => { if (document.visibilityState === "visible") LS.set("lastVisit", Date.now()); }, 30e3);
+window.addEventListener("pagehide", () => LS.set("lastVisit", Date.now()));
 S.seen.ch = S.seen.ch || {}; S.seen.t = S.seen.t || {};
 LS.set("seen", S.seen);
 
@@ -1563,6 +1579,7 @@ function filtered(){
   if (S.project !== "all") list = list.filter(t => (t.project || "") === S.project);
   if (S.onlyMine) list = list.filter(forMe);
   if (S.onlyOpen) list = list.filter(t => !topicDone(t));
+  if (S.onlyNew) list = list.filter(isUnread);
   if (S.q) list = list.filter(t => matches(t, S.q));
   const cmp = S.sort === "due" ? (a, b) => (a.due || "9999-99-99").localeCompare(b.due || "9999-99-99")
     : S.sort === "no" ? (a, b) => (b.no || 0) - (a.no || 0)
@@ -1754,14 +1771,15 @@ function openLightbox(id, kind){
   }, () => { box.innerHTML = `<div class="lb-msg">Couldn't load it. Check your connection and try again.</div>`; });
 }
 function closeLightbox(){ const lb = $("#lb"); if (lb.hidden) return; lb.hidden = true; $("#lb-in").innerHTML = ""; }
-S.att = {nt:[], d:[]};
+S.att = {nt:[], d:[], c:[]};
 function attBusy(w){ return S.att[w].some(a => a.st === "up"); }
 function attReady(w){ return S.att[w].filter(a => a.st === "ok").map(a => a.ref); }
 function renderAtt(w){
-  const box = w === "nt" ? $("#nt-att") : $("#d-att"); if (!box) return;
+  const box = w === "nt" ? $("#nt-att") : w === "c" ? $("#c-att") : $("#d-att"); if (!box) return;
   const items = S.att[w].map(a => `<div class="att-i ${a.st}" title="${esc(a.name)}">${a.kind === "video" ? `<video src="${esc(a.local)}" muted playsinline preload="metadata"></video>` : `<img alt="" src="${esc(a.local)}">`}<span class="kind">${a.kind === "video" ? "VID" : "IMG"}${a.st === "err" ? " · FAILED" : ""}</span><span class="bar"><i style="width:${Math.round(a.pct * 100)}%"></i></span><button type="button" class="x" data-att-rm="${w}|${esc(a.key)}" aria-label="Remove">×</button></div>`).join("");
   box.innerHTML = w === "nt" ? items + `<label class="att-add">${I.clip}<span>Add photo / video</span><input type="file" id="nt-file" accept="image/*,video/*" multiple></label>` : items;
   if (w === "d") $("#d-input").dispatchEvent(new Event("input"));
+  if (w === "c") $("#chat-input").dispatchEvent(new Event("input"));
   if (w === "nt") $("#nt-submit").disabled = attBusy("nt");
 }
 function addFiles(w, files){
@@ -1778,6 +1796,76 @@ function addFiles(w, files){
 }
 function clearAtt(w, keepUrls){ S.att[w].forEach(a => { if (!keepUrls || a.st !== "ok") URL.revokeObjectURL(a.local); }); S.att[w] = []; renderAtt(w); }
 function mediaCount(t){ return (Array.isArray(t.media) ? t.media.length : 0) + repliesFor(t.id).reduce((n, r) => n + (Array.isArray(r.media) ? r.media.length : 0), 0); }
+
+/* ---------- catch-up: what happened since your last visit, and alerts on this device ---------- */
+function newsSince(){
+  const since = S.visitAt, files = S.threads.filter(isUnread);
+  let msgs = 0, decided = 0;
+  for (const ch of S.idx.chat.keys()){ const o = chanObj(ch); if (!o || (o.dm && !o.mine)) continue; msgs += chanUnread(ch); }
+  for (const t of S.threads) if (t.kind === "decision" && t.status === "decided" && (t.decidedAt || 0) > since && t.decidedBy !== S.mySeat) decided++;
+  return {files:files.length, msgs, decided};
+}
+const alertsState = () => !("Notification" in window) ? "none" : Notification.permission;
+function renderCatchup(){
+  const box = $("#catchup"); if (!box) return;
+  const n = newsSince(), any = n.files || n.msgs || n.decided;
+  const askAlerts = !!S.mySeat && alertsState() === "default" && !LS.get("alertsAsked", false);
+  if (any && !S.catchupDone){
+    box.className = "catchup"; box.hidden = false;
+    box.innerHTML = `<span class="k">Since your last visit</span><span class="n">${n.files ? `<span><b>${n.files}</b> ${n.files === 1 ? "file" : "files"} with news</span>` : ""}${n.msgs ? `<span><b>${n.msgs}</b> chat ${n.msgs === 1 ? "message" : "messages"}</span>` : ""}${n.decided ? `<span><b>${n.decided}</b> ${n.decided === 1 ? "decision made" : "decisions made"}</span>` : ""}</span>
+      <span class="acts">${n.files ? `<button type="button" class="btn sm primary" data-cu="show">Show what's new</button>` : ""}<button type="button" class="btn sm ghost" data-cu="read">Mark all read</button></span>`;
+  } else if (askAlerts){
+    box.className = "catchup alerts"; box.hidden = false;
+    box.innerHTML = `<span class="k">Don't miss a thing</span><span class="n"><span>Get a ping on this device when someone posts, replies or mentions you.</span></span><span class="acts"><button type="button" class="btn sm primary" data-cu="alerts">Turn on alerts</button><button type="button" class="btn sm ghost" data-cu="noalerts">Not now</button></span>`;
+  } else box.hidden = true;
+}
+function markAllRead(){
+  const now = Date.now();
+  for (const t of S.threads) S.seen.t[t.id] = now;
+  for (const ch of S.idx.chat.keys()) S.seen.ch[ch] = now;
+  saveSeen(); S.visitAt = now; S.onlyNew = false; S.catchupDone = true; schedule();
+}
+/* a ping when the app is in the background, plus the unread count on the app icon */
+function activity(){
+  const ev = [];
+  for (const t of S.threads) if (t.seat !== S.mySeat) ev.push({at:t.at, title:`${seatName(seatById(t.seat))} put a new file on the table`, body:t.title, open:t.id});
+  for (const [tid, arr] of S.idx.replies){ const t = S.threads.find(x => x.id === tid); if (t) for (const r of arr) if (r.seat !== S.mySeat) ev.push({at:r.at, title:`${seatName(seatById(r.seat))} replied${t.no ? " on File " + topicNo(t) : ""}`, body:r.text || (r.media ? "Sent a photo or video" : ""), open:t.id, me:mentionsMe(r.text)}); }
+  for (const [ch, arr] of S.idx.chat){
+    const o = chanObj(ch); if (!o || (o.dm && !o.mine)) continue;
+    for (const m of arr) if (!m.bot && m.seat !== S.mySeat) ev.push({at:m.at, title:o.dm ? `${seatName(seatById(m.seat))} (private)` : `${seatName(seatById(m.seat))} in #${o.name}`, body:m.text || (m.media ? "Sent a photo or video" : ""), chan:ch, me:o.dm || mentionsMe(m.text)});
+  }
+  return ev;
+}
+function pingCheck(){
+  if (!S.loaded.threads) return;
+  const ev = activity(), top = ev.reduce((m, e) => Math.max(m, e.at || 0), 0);
+  if (S.pingAt == null){ S.pingAt = Math.max(top, Date.now() - 1000); return; }
+  const fresh = ev.filter(e => e.at > S.pingAt).sort((a, b) => a.at - b.at);
+  if (top > S.pingAt) S.pingAt = top;
+  const unread = S.threads.filter(isUnread).length + S.roster.channels.reduce((a, c) => a + chanUnread(c.id), 0);
+  try { if (navigator.setAppBadge){ unread ? navigator.setAppBadge(unread) : navigator.clearAppBadge(); } } catch (e){}
+  if (!fresh.length || document.visibilityState === "visible" || alertsState() !== "granted") return;
+  const e = fresh.find(x => x.me) || fresh[fresh.length - 1];
+  const title = fresh.length > 1 ? `${e.title} · +${fresh.length - 1} more` : e.title;
+  const opt = {body:String(e.body || "").slice(0, 140), icon:document.querySelector('link[rel="icon"]').href, tag:"smartcup-hq", renotify:true};
+  const go2 = () => { window.focus(); if (e.open) openThread(e.open); else if (e.chan){ S.channel = e.chan; go("chat"); } };
+  try { const n = new Notification(title, opt); n.onclick = () => { go2(); n.close(); }; }
+  catch (x){ if (navigator.serviceWorker) navigator.serviceWorker.getRegistration().then(r => r && r.showNotification(title, opt)).catch(() => {}); }
+}
+/* admin: a full backup of the board, chat and settings (photos and videos stay in Firebase) */
+async function backup(btn){
+  const cols = ["team", "claims", "people", "threads", "replies", "chat", "marks", "checkins", "names", "wild"], out = {};
+  btn.disabled = true; btn.textContent = "Collecting…";
+  try {
+    for (const c of cols){
+      out[c] = await new Promise((res, rej) => { let u = null; u = S.db.collection(c).onSnapshot(s => { const o = {}; s.docs.forEach(d => { if (!(c === "team" && d.id === "wild")) o[d.id] = d.data(); }); res(o); setTimeout(() => u && u(), 0); }, rej); });
+    }
+    const blob = new Blob([JSON.stringify({app:"smart-cup-hq", at:new Date().toISOString(), collections:out}, null, 1)], {type:"application/json"});
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "smart-cup-hq-backup-" + new Date().toISOString().slice(0, 10) + ".json"; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    btn.textContent = "Downloaded";
+  } catch (e){ btn.textContent = "Couldn't collect it. Try again."; }
+  setTimeout(() => { btn.disabled = false; btn.textContent = "Download backup"; }, 2500);
+}
 
 /* Up next: every dated step and file in one run sheet, ticked off right here */
 const CHECK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
@@ -1828,7 +1916,7 @@ function renderTopics(){
   const open = S.threads.filter(t => !topicDone(t)).length;
   const unread = S.threads.filter(isUnread).length;
   $("#t-eyebrow").textContent = S.loaded.threads ? `${plural(S.threads.length, "file", "files")} · ${open} open${unread ? " · " + unread + " new" : ""}` : "";
-  renderHero(); renderInstr(); renderDock(); renderLive();
+  renderCatchup(); renderHero(); renderInstr(); renderDock(); renderLive();
   const can = canPost();
   $("#prompt-in").disabled = !can;
   $("#prompt-t").textContent = can ? "What's on your mind?" : (S.mySeat ? "Posting isn't available right now" : "Pick your seat to post");
@@ -1836,7 +1924,7 @@ function renderTopics(){
   const count = k => S.threads.filter(t => k === "all" || t.kind === k).length;
   $("#filters").innerHTML =
     [["all","All files"], ...KIND_ORDER.map(k => [k, KINDS[k].plural])].map(([k, l]) => `<button type="button" class="chip" data-filter="${k}" aria-pressed="${S.filter === k}">${l}<span class="n">${count(k)}</span></button>`).join("")
-    + `<span class="fsep"></span><button type="button" class="chip" data-toggle="onlyMine" aria-pressed="${S.onlyMine}">For me</button><button type="button" class="chip" data-toggle="onlyOpen" aria-pressed="${S.onlyOpen}">Open only</button>` + projChips();
+    + `<span class="fsep"></span><button type="button" class="chip" data-toggle="onlyMine" aria-pressed="${S.onlyMine}">For me</button><button type="button" class="chip" data-toggle="onlyOpen" aria-pressed="${S.onlyOpen}">Open only</button><button type="button" class="chip" data-toggle="onlyNew" aria-pressed="${!!S.onlyNew}">New</button>` + projChips();
   const board = $("#board");
   if (!S.loaded.threads){
     board.innerHTML = S.offline
@@ -1897,12 +1985,12 @@ function renderChat(){
     const mine = isMineBy(m.by, m.seat) && m.docId.endsWith("__" + myKey());
     html += `<div class="msg${first ? " first" : ""}${mentionsMe(m.text) ? " mention-me" : ""}">
       <div class="msg-g">${first ? medal(s, 34) : `<span class="mono">${clock(m.at)}</span>`}</div>
-      <div>${first ? `<div class="msg-h"><b>${esc(seatName(s))}</b>${seatSub(s) ? `<span class="role">${esc(seatSub(s))}</span>` : ""}<span class="mono">${clock(m.at)}</span></div>` : ""}<div class="msg-t">${rich(m.text)}</div></div>
+      <div>${first ? `<div class="msg-h"><b>${esc(seatName(s))}</b>${seatSub(s) ? `<span class="role">${esc(seatSub(s))}</span>` : ""}<span class="mono">${clock(m.at)}</span></div>` : ""}${m.text ? `<div class="msg-t">${rich(m.text)}</div>` : ""}${mediaHTML(m.media)}</div>
       ${mine ? `<button class="del" data-del-msg="${esc(m.docId)}|${esc(m.id)}" aria-label="Delete message">Delete</button>` : "<span></span>"}
     </div>`;
     prev = m;
   }
-  $("#chat-list").innerHTML = html;
+  $("#chat-list").innerHTML = html; hydrateMedia($("#chat-list"));
   if (atBottom || S.stickChat){ sc.scrollTop = sc.scrollHeight; S.stickChat = false; }
   const typers = S.peers.filter(p => !p.isMe && p.presence && p.presence.typing === ch.id && typeof p.presence.seat === "string").map(p => seatById(p.presence.seat)).filter(Boolean);
   const uniq = [...new Map(typers.map(s => [s.id, s])).values()];
@@ -2142,6 +2230,7 @@ function renderAdmin(){
     <section class="adm-sec"><h2>Projects</h2><p>Projects keep big pieces of work together: every topic can be filed under one, and each project shows in the sidebar with its open count.</p>
       ${(d.projects || []).map(p => `<div class="adm-proj" data-pid="${esc(p.id)}"><span class="pdot" style="--pc:${cup(p.color).c}"></span><input data-pf="name" value="${esc(p.name)}" maxlength="40" aria-label="Project name"><div class="swatches">${CUPS.map(e => `<button type="button" class="sw${p.color === e.id ? " on" : ""}" data-adm="pcolor" data-v="${e.id}" style="--c:${e.c}" title="${e.name}" aria-label="${e.name}" aria-pressed="${p.color === e.id}"></button>`).join("")}</div><button type="button" class="icon-btn" data-adm="remove-proj" aria-label="Delete project">${I.trash}</button></div>`).join("")}
       <button type="button" class="btn" data-adm="add-proj">+ Add project</button></section>
+    <section class="adm-sec"><h2>Backup</h2><p>Download everything on the board, the chat and the team settings as one file. Keep a copy now and then. Photos and videos stay in Firebase.</p><button type="button" class="btn" data-backup>Download backup</button></section>
     <section class="adm-sec"><h2>Import</h2><p>One time: bring the topics, chat and names over from the old claude.ai HQ. Pick the export file you were sent.</p><input type="file" id="hq-import" accept=".json,application/json"></section>
     ${hasEx ? `<section class="adm-sec"><h2>Examples</h2><p>Some sample content is still on the board. Remove it in one click.</p><button type="button" class="btn danger" data-adm="clear-examples">Delete examples</button></section>` : ""}
     <div class="savebar"><span class="st${S.adminDirty ? " dirty" : ""}" id="save-st">${S.adminDirty ? "Unsaved changes" : "All changes saved"}</span>
@@ -2230,10 +2319,12 @@ function removeItem(mapName, coll, id, itemId){
     try { if (doc.items.length) await S.db.doc(coll + "/" + id).set(doc); else await S.db.doc(coll + "/" + id).delete(); } catch (e){ writeErr(e); }
   });
 }
-function sendChat(text){
+function sendChat(text, media){
   const wk = curWk(); const id = `${S.channel}__w${wk}__${myKey()}`;
   S.stickChat = true;
-  return appendItem("chatDocs", "chat", id, {ch:S.channel, wk, by:S.uid || null}, {id:rid("m"), at:Date.now(), seat:S.mySeat, text});
+  const item = {id:rid("m"), at:Date.now(), seat:S.mySeat, text};
+  if (media && media.length) item.media = media;
+  return appendItem("chatDocs", "chat", id, {ch:S.channel, wk, by:S.uid || null}, item);
 }
 function sendReply(tid, text, media){
   const id = `${tid}__${myKey()}`;
@@ -2361,6 +2452,7 @@ function renderAll(){
   renderOnboard();
   renderCoach();
   renderTabbar();
+  pingCheck();
 }
 function renderTabbar(){
   const tb = $("#tabbar"); if (!tb) return;
@@ -2403,6 +2495,15 @@ document.addEventListener("click", e => {
   if ((el = q("[data-mecolor]"))){ S.meColor = el.dataset.mecolor; renderMe(); return; }
   if ((el = q("[data-close-me]"))){ closeMe(); return; }
   if ((el = q("[data-dock]"))){ const mine = myDock(); if (!(mine && mine.state === el.dataset.dock)) dock(el.dataset.dock); return; }
+  if ((el = q("[data-cu]"))){
+    const k = el.dataset.cu;
+    if (k === "show"){ S.onlyNew = true; S.catchupDone = true; schedule(); setTimeout(() => $("#board")?.scrollIntoView({behavior:"smooth", block:"start"}), 60); }
+    else if (k === "read") markAllRead();
+    else if (k === "alerts"){ LS.set("alertsAsked", true); if ("Notification" in window) Notification.requestPermission().then(p => { toast(p === "granted" ? "Alerts are on for this device." : "Alerts stay off. You can allow them in the browser settings."); schedule(); }); }
+    else if (k === "noalerts"){ LS.set("alertsAsked", true); schedule(); }
+    return;
+  }
+  if ((el = q("[data-backup]"))){ backup(el); return; }
   if ((el = q("[data-media]"))){ if (S.media) openLightbox(el.dataset.media, el.dataset.mkind); return; }
   if ((el = q("[data-att-rm]"))){ const [w, key] = el.dataset.attRm.split("|"); const a = S.att[w].find(x => x.key === key); if (a){ URL.revokeObjectURL(a.local); if (a.ref && S.media) S.media.del(a.ref.id); S.att[w] = S.att[w].filter(x => x !== a); renderAtt(w); } return; }
   if ((el = q("[data-un-step]"))){ const [tid, sid] = el.dataset.unStep.split("|"); const th = S.threads.find(x => x.id === tid); if (th && canPost()) updateThread(th.id, {steps:stepsOf(th).map(x => x.id === sid ? {...x, done:!x.done, doneAt:Date.now()} : x)}); return; }
@@ -2572,11 +2673,12 @@ $("#nt-form").addEventListener("submit", async e => {
   btn.disabled = false;
   if (id){ clearAtt("nt", true); closeModal(); if (S.view !== "topics") go("topics"); }
 });
-wireComposer($("#chat-input"), $("#chat-send"), v => { if (canPost()){ sendChat(v); setPresence({typing:null}); } }, typing);
+wireComposer($("#chat-input"), $("#chat-send"), v => { if (canPost()){ sendChat(v, attReady("c")); clearAtt("c", true); setPresence({typing:null}); } }, typing, {ready:() => attReady("c").length > 0, busy:() => attBusy("c")});
+$("#c-clip").innerHTML = I.clip;
 wireComposer($("#d-input"), $("#d-send"), v => { if (canPost() && S.openId){ sendReply(S.openId, v, attReady("d")); clearAtt("d", true); } }, null, {ready:() => attReady("d").length > 0, busy:() => attBusy("d")});
 $("#d-clip").innerHTML = I.clip;
 document.addEventListener("change", e => {
-  if (e.target && (e.target.id === "d-file" || e.target.id === "nt-file")){ const w = e.target.id === "d-file" ? "d" : "nt"; const fl = [...(e.target.files || [])]; e.target.value = ""; if (w === "d" && !canPost()) return; addFiles(w, fl); }
+  if (e.target && (e.target.id === "d-file" || e.target.id === "nt-file" || e.target.id === "c-file")){ const w = e.target.id === "d-file" ? "d" : e.target.id === "c-file" ? "c" : "nt"; const fl = [...(e.target.files || [])]; e.target.value = ""; if (w !== "nt" && !canPost()) return; addFiles(w, fl); }
 });
 document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("#lb").hidden){ e.stopPropagation(); closeLightbox(); } }, true);
 $("#lb").addEventListener("click", e => { if (e.target.id === "lb" || e.target.closest("[data-lb-close]")) closeLightbox(); });
@@ -2643,6 +2745,6 @@ derive(); renderAll();
 connect();
 })();
 </script>
-<script src="hq-wild.js?v=1" defer></script>
+<script src="hq-wild.js?v=2" defer></script>
 
 </body></html>

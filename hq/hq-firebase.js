@@ -143,21 +143,22 @@ function mkMedia(uid){
 const people = {};
 function watchPeople(){ onSnapshot(collection(fs, "people"), s => { s.docs.forEach(d => { people[d.id] = d.data(); }); }, () => {}); }
 
-/* ---------- room: presence through presence/{uid} with a heartbeat ---------- */
+/* ---------- room: presence through presence/{uid} with a heartbeat ----------
+   One beat a minute keeps six people online all day well inside the free 50k reads/day. */
 function mkRoom(uid){
   let mine = {}, pushT = 0, last = [], cbs = [];
   const push = () => setDoc(doc(fs, "presence", uid), {p:mine, at:Date.now(), by:uid}).catch(() => {});
   const soon = () => { clearTimeout(pushT); pushT = setTimeout(push, 250); };
-  setInterval(() => { if (document.visibilityState === "visible") push(); }, 25000);
+  setInterval(() => { if (document.visibilityState === "visible") push(); }, 60000);
   document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") push(); });
   window.addEventListener("pagehide", () => { setDoc(doc(fs, "presence", uid), {p:mine, at:0, by:uid}).catch(() => {}); });
   const emit = () => {
     const now = Date.now();
-    const peers = last.filter(x => x && now - (x.at || 0) < 70000).map(x => ({kind:"viewer", presence:x.p || {}, by:x.by, isMe:x.by === uid, guest:false}));
+    const peers = last.filter(x => x && now - (x.at || 0) < 150000).map(x => ({kind:"viewer", presence:x.p || {}, by:x.by, isMe:x.by === uid, guest:false}));
     cbs.forEach(fn => { try { fn({peers}); } catch (e){} });
   };
   onSnapshot(collection(fs, "presence"), s => { last = s.docs.map(d => d.data()); emit(); }, () => {});
-  setInterval(emit, 30000);
+  setInterval(emit, 45000);
   push();
   return {
     presence: patch => { mine = Object.assign({}, mine, patch || {}); soon(); return Promise.resolve(); },
