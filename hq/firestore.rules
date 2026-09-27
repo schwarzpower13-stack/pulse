@@ -26,5 +26,9 @@ service cloud.firestore {
     match /marks/{id} { allow read, write: if team(); }
     match /checkins/{id} { allow read, write: if team(); }
     match /names/{id} { allow read, write: if team(); }
+    match /wild/{id} {
+      allow read, write: if team();
+      match /replies/{rid} { allow read, write: if team(); }
+    }
   }
 }

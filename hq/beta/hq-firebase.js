@@ -1,10 +1,10 @@
 /* Smart Cup HQ: Firebase backend for the room.
    The room's page code was written for claude.ai's db / user / room capabilities; this module serves
-   the same small API (doc/collection with get/set/update/delete/onSnapshot, user.me/can/profiles,
+   the same small API (doc/collection with get/set/update/delete/onSnapshot/orderBy/add, user.me/can/profiles,
    room.presence/onPeers) from Firestore, behind an email sign-in limited to the team. */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import { getAuth, onAuthStateChanged, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, collection, getDoc, setDoc, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, collection, getDoc, setDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy, addDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDPCvwE-B5UcIwFauo4aQLWrBpxU8xm2NE",
@@ -56,12 +56,15 @@ function mkDoc(path){
     collection: sub => mkCol(path + "/" + sub)
   };
 }
-function mkCol(path){
+function mkCol(path, order){
   const ref = collection(fs, path);
+  const q = order ? query(ref, orderBy(order[0], order[1] || "asc")) : ref;
   return {
     path,
     doc: id => mkDoc(path + "/" + (id || Math.random().toString(36).slice(2) + Date.now().toString(36))),
-    onSnapshot: (next, err) => onSnapshot(ref, s => next({docs:s.docs.map(snapDoc), size:s.size, empty:s.empty, docChanges:() => [], metadata:{fromCache:s.metadata.fromCache, hasPendingWrites:s.metadata.hasPendingWrites}}), e => err && err(mapErr(e)))
+    add: d => addDoc(ref, d).then(r => mkDoc(r.path), fail),
+    orderBy: (field, dir) => mkCol(path, [field, dir]),
+    onSnapshot: (next, err) => onSnapshot(q, s => next({docs:s.docs.map(snapDoc), size:s.size, empty:s.empty, docChanges:() => [], metadata:{fromCache:s.metadata.fromCache, hasPendingWrites:s.metadata.hasPendingWrites}}), e => err && err(mapErr(e)))
   };
 }
 const db = {doc:mkDoc, collection:mkCol};

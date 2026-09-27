@@ -667,6 +667,62 @@ button.opt:disabled{cursor:default}
   .empty-cup{padding:28px 14px 30px}
 }
 
+
+/* ---------- v2: projects, steps, owners, due dates, search, list ---------- */
+.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 10px}
+.search{flex:1 1 260px;display:flex;align-items:center;gap:8px;border:1px solid var(--line-2);background:var(--panel);padding:0 12px;min-height:40px}
+.search:focus-within{border-color:var(--amber)}
+.search svg{width:15px;height:15px;fill:none;stroke:var(--muted);stroke-width:2;stroke-linecap:round;flex:none}
+.search input{flex:1;min-width:0;border:0;background:transparent;outline:none;padding:9px 0;font-size:14px}
+.tools select{background:var(--panel);border:1px solid var(--line-2);padding:0 10px;min-height:40px;font:600 10px/1.2 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--text)}
+.seg.lay button{min-height:40px}
+.tools .seg.lay{width:auto;display:flex;gap:6px}
+@media (max-width:640px){.tools{gap:6px}.search{flex-basis:100%}.tools select{flex:1}.tools .seg.lay button{padding:7px 12px}}
+.pchip{border-color:color-mix(in srgb,var(--pc) 55%,transparent)!important}
+.pchip[aria-pressed="true"]{background:var(--pc)!important;border-color:var(--pc)!important;color:var(--void)!important}
+.pdot{width:10px;height:10px;border-radius:50%;background:var(--pc);box-shadow:0 0 8px color-mix(in srgb,var(--pc) 60%,transparent);flex:none;display:inline-block}
+.nav-btn .pdot{margin:0 4px}
+#rail-projects .nav-btn .mono{color:var(--muted)}
+#rail-projects .nav-btn[aria-current="true"] .mono{color:var(--void)}
+.tmeta{display:flex;flex-wrap:wrap;gap:6px;align-items:center;position:relative}
+.ptag{font:700 9px/1.4 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;padding:2px 7px;border:1px solid var(--pc);color:var(--pc);white-space:nowrap}
+.due{font:700 9px/1.4 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;padding:2px 7px;border:1px solid var(--line-2);color:var(--muted);white-space:nowrap}
+.due.soon{border-color:var(--amber);color:var(--amber)}
+.due.late{border-color:var(--red);color:var(--void);background:var(--red)}
+.due.ok{border-color:var(--lime);color:var(--lime)}
+.owner{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--muted)}
+.prog{display:flex;align-items:center;gap:10px;position:relative}
+.prog-bar{flex:1;height:5px;background:var(--line-2);overflow:hidden;min-width:60px}
+.prog-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--amber),var(--lime))}
+.board.list{grid-template-columns:minmax(0,1fr)!important;gap:6px}
+.board.list .card{flex-direction:row;flex-wrap:wrap;align-items:center;gap:6px 14px;padding:10px 14px}
+.board.list .card .no,.board.list .card .excerpt,.board.list .card .to,.board.list .card .opts{display:none}
+.board.list .card-band{margin:0;padding:0;border:0;background:none!important;flex:0 0 auto}
+.board.list .card-band .spacer{display:none}
+.board.list .card h3{flex:1 1 280px;font-size:15.5px!important;font-weight:700!important}
+.board.list .card .tmeta,.board.list .card .prog{flex:0 1 auto}
+.board.list .card .prog{min-width:140px}
+.board.list .card-foot{border:0;padding:0;flex:0 0 auto}
+.d-plan{border:1.5px solid var(--line-2);background:var(--panel-2);padding:14px;margin:0 0 20px;display:flex;flex-direction:column;gap:10px}
+.plan-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.plan-row .fld{margin:0}
+.steps-h{display:flex;align-items:center;gap:10px}
+.steps-h .tag-m{color:var(--lime)}
+.steps{display:flex;flex-direction:column;gap:4px}
+.step{display:flex;align-items:center;gap:10px;padding:7px 8px;border:1px solid var(--line);background:var(--panel)}
+.step-c{width:22px;height:22px;border:1.5px solid var(--line-3);background:transparent;color:var(--void);font:800 13px/1 var(--f-body);cursor:pointer;flex:none;display:grid;place-items:center}
+.step-c[aria-pressed="true"]{background:var(--lime);border-color:var(--lime)}
+.step-t{flex:1;min-width:0;font-size:14px;overflow-wrap:anywhere}
+.step.done .step-t{text-decoration:line-through;color:var(--dim)}
+.step:hover .del,.step .del.arm{opacity:1}
+.step-add{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;gap:6px}
+.step-add input,.step-add select{background:var(--panel);border:1px solid var(--line-2);padding:8px 10px;min-width:0;font-size:13.5px;outline:none}
+.step-add input:focus,.step-add select:focus{border-color:var(--amber)}
+.nt-row{margin-bottom:0}
+.adm-proj{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:10px;align-items:center;margin-bottom:8px}
+.adm-proj input{width:100%;padding:9px 12px;border:1px solid var(--line-2);background:var(--panel-2);outline:none;min-width:0}
+.adm-proj .sw{width:20px;height:20px}
+@media (max-width:640px){.plan-row{grid-template-columns:1fr 1fr}.plan-row .fld:last-child{grid-column:1/-1}.step-add{grid-template-columns:1fr 1fr}.step-add input#step-text{grid-column:1/-1}.adm-proj{grid-template-columns:auto minmax(0,1fr) auto}.adm-proj .swatches{grid-column:1/-1}}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;transition:none!important}
 }
@@ -686,6 +742,8 @@ button.opt:disabled{cursor:default}
     <nav class="nav" aria-label="Main">
       <button class="nav-btn" data-view="topics" id="nav-topics"><span class="ic" id="ic-topics"></span><span class="nav-t">Backstage</span><span class="badge" id="badge-topics"></span></button>
     </nav>
+    <div class="rail-label tag-m" id="rail-projects-h">Projects</div>
+    <nav class="nav" id="rail-projects" aria-label="Projects"></nav>
     <div class="rail-label tag-m">Channels</div>
     <nav class="nav" id="rail-channels" aria-label="Channels"></nav>
     <div class="rail-label tag-m">Team · private chats <span class="mono" id="online-count"></span></div>
@@ -726,6 +784,7 @@ button.opt:disabled{cursor:default}
                 <button type="button" class="prompt-in" id="prompt-in" data-new="question"><span class="caret">▸</span><span id="prompt-t">What's on your mind?</span><span class="cur" aria-hidden="true"></span><small>Ask it · spark it · call it</small></button>
                 <div class="prompt-kinds" id="kinds"></div>
               </div>
+              <div class="tools"><label class="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg><input id="t-search" type="search" placeholder="Search topics, steps and replies" autocomplete="off" aria-label="Search"></label><select id="t-sort" aria-label="Sort"><option value="activity">Latest activity</option><option value="due">Due date</option><option value="no">Newest file</option><option value="progress">Least done</option></select><div class="seg lay" role="group" aria-label="Layout"><button type="button" data-layout="grid">Cards</button><button type="button" data-layout="list">List</button></div></div>
               <div class="filters" id="filters"></div>
               <div class="board" id="board"><div class="empty"><b>Opening the room…</b>Loading the team's work.</div></div>
             </section>
@@ -807,6 +866,8 @@ button.opt:disabled{cursor:default}
       <label class="fld"><span>Details</span><textarea id="nt-body" rows="4" maxlength="4000" placeholder="Context, links, anything that helps"></textarea></label>
       <div class="fld" id="nt-opts-wrap" hidden><span>Options (2–5)</span><div id="nt-opts"></div><div><button type="button" class="btn sm" id="nt-add-opt">+ Option</button></div></div>
       <div class="fld"><span id="nt-to-label">Who is this for? (optional)</span><div class="chips" id="nt-to"></div></div>
+      <div class="fld"><span>Project</span><div class="chips" id="nt-proj"></div></div>
+      <div class="adm-row nt-row"><label class="fld"><span>Owner (optional)</span><select id="nt-owner"></select></label><label class="fld"><span>Due date (optional)</span><input type="date" id="nt-due"></label></div>
       <footer><button type="button" class="btn ghost" data-close-modal>Cancel</button><button type="submit" class="btn primary" id="nt-submit">Put it on the table</button></footer>
     </form>
   </div>
@@ -979,6 +1040,11 @@ const DEFAULT_ROSTER = {
     {id:"s5", name:"", role:"Technician", color:"violet", admin:false, decider:false},
     {id:"s6", name:"", role:"Designer", color:"pink", admin:false, decider:false},
   ],
+  projects:[
+    {id:"p-proto", name:"Prototype #01", color:"amber"},
+    {id:"p-brand", name:"Brand & launch", color:"pink"},
+    {id:"p-money", name:"Funding & legal", color:"cyan"},
+  ],
   channels:[
     {id:"general", name:"General", desc:"Anything the whole team should see"},
     {id:"tech", name:"Tech", desc:"Screen, electronics, materials, firmware"},
@@ -1024,7 +1090,7 @@ const S = {
   roster:clone(DEFAULT_ROSTER), claims:{}, threads:[], replyDocs:new Map(), chatDocs:new Map(), markDocs:new Map(), checkins:new Map(), names:new Map(),
   obStep:null, meColor:null,
   loaded:{roster:false, claims:false, threads:false, chat:false},
-  view:"topics", channel:"general", filter:"all", onlyMine:false, onlyOpen:false, openId:null,
+  view:"topics", channel:"general", filter:"all", project:"all", q:"", sort:LS.get("sort", "activity"), layout:LS.get("layout", "grid"), onlyMine:false, onlyOpen:false, openId:null,
   mySeat:null, mySrc:null, forceOnboard:false, peers:[], online:new Set(), profiles:{},
   eff:{bySeat:{}, byUid:{}}, idx:null,
   adminDraft:null, adminDirty:false, sugg:{},
@@ -1067,6 +1133,7 @@ function normalizeRoster(d){
   r.seats = Array.isArray(r.seats) && r.seats.length ? r.seats : clone(DEFAULT_ROSTER.seats);
   r.channels = Array.isArray(r.channels) && r.channels.length ? r.channels : clone(DEFAULT_ROSTER.channels);
   r.assign = r.assign && typeof r.assign === "object" ? r.assign : {};
+  r.projects = Array.isArray(r.projects) ? r.projects : clone(DEFAULT_ROSTER.projects);
   return r;
 }
 function effective(assign=S.roster.assign, list=seats()){
@@ -1210,6 +1277,7 @@ function chanUnread(ch){
 function mentionsMe(text){ const s = mySeatObj(); return !!s && typeof text === "string" && text.includes("@" + seatName(s)); }
 function forMe(t){
   if (!S.mySeat) return false;
+  if (t.owner === S.mySeat || stepsOf(t).some(x => x.seat === S.mySeat && !x.done)) return true;
   if ((t.to || []).includes(S.mySeat) || mentionsMe(t.body)) return true;
   return repliesFor(t.id).some(r => mentionsMe(r.text));
 }
@@ -1288,6 +1356,9 @@ function renderRail(){
     const u = chanUnread(c.id);
     return `<button class="nav-btn" data-chan="${esc(c.id)}" aria-current="${S.view === "chat" && S.channel === c.id}"><span class="hash">#</span><span class="nav-t">${esc(c.name)}</span><span class="badge">${u || ""}</span></button>`;
   }).join("");
+  const PJ = R.projects || [];
+  $("#rail-projects-h").hidden = !PJ.length;
+  $("#rail-projects").innerHTML = PJ.map(p => { const n = S.threads.filter(t => t.project === p.id && !topicDone(t)).length; return `<button class="nav-btn" data-project="${esc(p.id)}" aria-current="${S.view === "topics" && S.project === p.id}"><span class="pdot" style="--pc:${cup(p.color).c}"></span><span class="nav-t">${esc(p.name)}</span><span class="mono">${n || ""}</span></button>`; }).join("");
   const onCount = R.seats.filter(s => S.online.has(s.id)).length;
   $("#online-count").innerHTML = S.room ? `<b>${onCount}</b> online` : "";
   $("#rail-seats").innerHTML = R.seats.map(s => {
@@ -1349,6 +1420,13 @@ function cardHTML(t){
   let special = "";
   if ((t.to || []).length) special += `<div class="to"><span class="tag-m">${k === "question" ? "Asking" : "For"}</span>${t.to.map(chipSeat).join("")}</div>`;
   if (k === "decision") special += optionsHTML(t, false);
+  const pj = projOf(t.project), pr = progress(t), du = t.due ? dueInfo(t.due, topicDone(t)) : null, ow = seatById(t.owner);
+  let tm = "";
+  if (pj) tm += `<span class="ptag" style="--pc:${cup(pj.color).c}">${esc(pj.name)}</span>`;
+  if (du) tm += `<span class="due ${du.cls}">${esc(du.txt)}</span>`;
+  if (ow) tm += `<span class="owner">${medal(ow, 18)}${esc(seatName(ow))}</span>`;
+  if (tm) special = `<div class="tmeta">${tm}</div>` + special;
+  if (pr) special += `<div class="prog"><div class="prog-bar"><i style="width:${Math.round(100 * pr.done / pr.all)}%"></i></div><span class="mono">${pr.done}/${pr.all} steps</span></div>`;
   return `<article class="card k-${k}${wide ? " wide" : ""}${t.pinned ? " pinned" : ""}" tabindex="0" data-open="${esc(t.id)}" style="--kc:var(--k-${k})" aria-label="${esc(KINDS[k].label + ": " + t.title)}">
     ${t.no ? `<span class="no" aria-hidden="true">${pad2(t.no)}</span>` : ""}
     <div class="card-band">${kbadge(k, true)}<span class="tag-m kind-label">${t.no ? "File " + topicNo(t) + " · " : ""}${KINDS[k].label}</span>${statusPill(t)}<span class="spacer"></span>${t.pinned ? `<span class="pin-i" title="Pinned">${I.pin}</span>` : ""}${isUnread(t) ? '<span class="unread" title="New activity"></span>' : ""}<span class="mono">${ago(lastAct(t).at)}</span></div>
@@ -1358,12 +1436,40 @@ function cardHTML(t){
     <div class="card-foot">${medal(seat, 24)}<span><b>${esc(seatName(seat))}</b></span><span class="spacer"></span>${reactMini(t.id)}<span class="replies" title="${esc(plural(reps.length, "reply", "replies"))}"><span class="ic">${I.reply}</span><span class="mono">${reps.length}</span>${repliers.length ? `<span class="stack">${repliers.map(s => medal(s, 20)).join("")}</span>` : ""}</span></div>
   </article>`;
 }
+const projOf = id => (S.roster.projects || []).find(p => p.id === id) || null;
+function stepsOf(t){ return Array.isArray(t.steps) ? t.steps : []; }
+function progress(t){ const st = stepsOf(t); return st.length ? {done:st.filter(x => x.done).length, all:st.length} : null; }
+function fmtDate(d){ const [y, m, dd] = d.split("-").map(Number); return dd + " " + MONTHS[m - 1]; }
+function dueInfo(d, done){
+  const n = daysTo(d); if (n == null) return null;
+  const cls = done ? "ok" : n < 0 ? "late" : n <= 2 ? "soon" : "";
+  const txt = done ? "Done · " + fmtDate(d) : n === 0 ? "Due today" : n === 1 ? "Due tomorrow" : n < 0 ? plural(-n, "day", "days") + " late" : "Due " + fmtDate(d);
+  return {n, cls, txt};
+}
+function topicDone(t){ const p = progress(t); return t.kind === "note" ? !!p && p.done === p.all : !isOpen(t); }
+function matches(t, q){
+  if (!q) return true;
+  const hay = [t.title, t.body, "#" + pad2(t.no || 0), ...(t.options || []), ...stepsOf(t).map(x => x.text), ...repliesFor(t.id).map(r => r.text), (projOf(t.project) || {}).name, seatName(seatById(t.owner))].join("\n").toLowerCase();
+  return q.toLowerCase().split(/\s+/).filter(Boolean).every(w => hay.includes(w));
+}
+function pct(t){ const p = progress(t); return p ? p.done / p.all : (topicDone(t) ? 1 : 0); }
 function filtered(){
   let list = S.threads.slice();
   if (S.filter !== "all") list = list.filter(t => t.kind === S.filter);
+  if (S.project !== "all") list = list.filter(t => (t.project || "") === S.project);
   if (S.onlyMine) list = list.filter(forMe);
-  if (S.onlyOpen) list = list.filter(isOpen);
-  return list.sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || lastAct(b).at - lastAct(a).at);
+  if (S.onlyOpen) list = list.filter(t => !topicDone(t));
+  if (S.q) list = list.filter(t => matches(t, S.q));
+  const cmp = S.sort === "due" ? (a, b) => (a.due || "9999-99-99").localeCompare(b.due || "9999-99-99")
+    : S.sort === "no" ? (a, b) => (b.no || 0) - (a.no || 0)
+    : S.sort === "progress" ? (a, b) => pct(a) - pct(b)
+    : (a, b) => lastAct(b).at - lastAct(a).at;
+  return list.sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || cmp(a, b) || lastAct(b).at - lastAct(a).at);
+}
+function projChips(){
+  const P = S.roster.projects || []; if (!P.length) return "";
+  const cnt = id => S.threads.filter(t => (t.project || "") === id && !topicDone(t)).length;
+  return `<span class="fsep"></span>` + [["all", "All projects"], ...P.map(p => [p.id, p.name, p.color])].map(([id, n, c]) => `<button type="button" class="chip${c ? " pchip" : ""}" data-project="${esc(id)}" aria-pressed="${S.project === id}" ${c ? `style="--pc:${cup(c).c}"` : ""}>${esc(n)}${id !== "all" ? `<span class="n">${cnt(id)}</span>` : ""}</button>`).join("");
 }
 const trunc = (s, n) => s.length > n ? s.slice(0, n - 1) + "…" : s;
 const CUP_SVG = `<svg class="cupsvg" viewBox="-118 -24 436 322" role="img" aria-label="The crew around the cup">
@@ -1519,7 +1625,7 @@ function renderLive(){
   }).join("") : `<div class="live-empty">Quiet so far. The first message, check-in or topic lights this up.</div>`;
 }
 function renderTopics(){
-  const open = S.threads.filter(isOpen).length;
+  const open = S.threads.filter(t => !topicDone(t)).length;
   const unread = S.threads.filter(isUnread).length;
   $("#t-eyebrow").textContent = S.loaded.threads ? `${plural(S.threads.length, "file", "files")} · ${open} open${unread ? " · " + unread + " new" : ""}` : "";
   renderHero(); renderInstr(); renderDock(); renderLive();
@@ -1530,7 +1636,7 @@ function renderTopics(){
   const count = k => S.threads.filter(t => k === "all" || t.kind === k).length;
   $("#filters").innerHTML =
     [["all","All files"], ...KIND_ORDER.map(k => [k, KINDS[k].plural])].map(([k, l]) => `<button type="button" class="chip" data-filter="${k}" aria-pressed="${S.filter === k}">${l}<span class="n">${count(k)}</span></button>`).join("")
-    + `<span class="fsep"></span><button type="button" class="chip" data-toggle="onlyMine" aria-pressed="${S.onlyMine}">For me</button><button type="button" class="chip" data-toggle="onlyOpen" aria-pressed="${S.onlyOpen}">Open only</button>`;
+    + `<span class="fsep"></span><button type="button" class="chip" data-toggle="onlyMine" aria-pressed="${S.onlyMine}">For me</button><button type="button" class="chip" data-toggle="onlyOpen" aria-pressed="${S.onlyOpen}">Open only</button>` + projChips();
   const board = $("#board");
   if (!S.loaded.threads){
     board.innerHTML = S.offline
@@ -1538,9 +1644,12 @@ function renderTopics(){
       : `<div class="empty"><b>Opening the room…</b>Loading the team's work.</div>`;
     return;
   }
+  $("#t-sort").value = S.sort;
+  document.querySelectorAll("[data-layout]").forEach(b => b.setAttribute("aria-pressed", String(S.layout === b.dataset.layout)));
+  board.classList.toggle("list", S.layout === "list");
   const list = filtered();
   board.innerHTML = list.length ? list.map(cardHTML).join("")
-    : S.threads.length ? `<div class="empty"><b>Nothing matches</b>Try another filter.</div>`
+    : S.threads.length ? `<div class="empty"><b>Nothing matches</b>${S.q ? "No topic has “" + esc(S.q) + "”. " : ""}Try another filter or project.</div>`
     : `<div class="empty-cup">${emptyArt()}<b>Quiet night on the table</b><p><em>Be the first to raise a glass.</em> Post the question you've been sitting on, or the idea you had on the way home.</p>${can ? `<button type="button" class="btn primary" data-new="question">Ask the first question</button>` : ""}</div>`;
 }
 function emptyArt(){
@@ -1647,15 +1756,30 @@ function renderDrawer(){
     const own = isMineBy(r.by, r.seat) && r.docId.endsWith("__" + myKey());
     return `<div class="reply">${medal(s, 34)}<div><div class="reply-h"><b>${esc(seatName(s))}</b>${seatSub(s) ? `<span class="role">${esc(seatSub(s))}</span>` : ""}<span class="mono">${ago(r.at)}</span>${own ? `<button class="del" data-del-reply="${esc(r.docId)}|${esc(r.id)}">Delete</button>` : ""}</div><div class="reply-t">${rich(r.text)}</div></div></div>`;
   }).join("");
+  const P = S.roster.projects || [], st = stepsOf(t), pr = progress(t), can = canPost();
+  const plan = `<div class="d-plan">
+    <div class="plan-row">
+      <label class="fld"><span>Project</span><select data-plan="project" ${can ? "" : "disabled"}><option value="">No project</option>${P.map(p => `<option value="${esc(p.id)}" ${t.project === p.id ? "selected" : ""}>${esc(p.name)}</option>`).join("")}</select></label>
+      <label class="fld"><span>Owner</span><select data-plan="owner" ${can ? "" : "disabled"}><option value="">Nobody yet</option>${seats().map(x => `<option value="${esc(x.id)}" ${t.owner === x.id ? "selected" : ""}>${esc(seatName(x))}</option>`).join("")}</select></label>
+      <label class="fld"><span>Due</span><input type="date" data-plan="due" value="${esc(t.due || "")}" ${can ? "" : "disabled"}></label>
+    </div>
+    <div class="steps-h"><span class="tag-m">Steps</span>${pr ? `<div class="prog-bar"><i style="width:${Math.round(100 * pr.done / pr.all)}%"></i></div><span class="mono">${pr.done}/${pr.all} done</span>` : `<span class="mono">Break big topics into steps, each with a person and a date</span>`}</div>
+    ${st.length ? `<div class="steps">${st.map(x => { const who = seatById(x.seat); const du = x.due ? dueInfo(x.due, x.done) : null; return `<div class="step${x.done ? " done" : ""}" data-step="${esc(x.id)}"><button type="button" class="step-c" data-step-toggle aria-pressed="${!!x.done}" ${can ? "" : "disabled"} aria-label="${x.done ? "Mark not done" : "Mark done"}">${x.done ? "✓" : ""}</button><span class="step-t">${rich(x.text)}</span>${du ? `<span class="due ${du.cls}">${esc(du.txt)}</span>` : ""}${who ? `<span title="${esc(seatName(who))}">${medal(who, 20)}</span>` : ""}${can ? `<button type="button" class="del" data-step-del>Delete</button>` : ""}</div>`; }).join("")}</div>` : ""}
+    ${can ? `<form class="step-add" id="step-add" autocomplete="off"><input id="step-text" maxlength="200" placeholder="Add a step…" aria-label="New step"><select id="step-seat" aria-label="Who does it"><option value="">Anyone</option>${seats().map(x => `<option value="${esc(x.id)}">${esc(seatName(x))}</option>`).join("")}</select><input type="date" id="step-due" aria-label="Step due date"><button type="submit" class="btn sm">Add</button></form>` : ""}
+  </div>`;
   const body = $("#d-body");
+  const ae = document.activeElement, keepF = ae && body.contains(ae) && ae.id ? {id:ae.id, s:ae.selectionStart, e:ae.selectionEnd} : null;
+  const keepV = {}; ["step-text", "step-seat", "step-due"].forEach(id => { const x = document.getElementById(id); if (x) keepV[id] = x.value; });
   const keep = body.scrollTop, atBottom = body.scrollHeight - body.scrollTop - body.clientHeight < 60;
   body.innerHTML = `${t.no ? `<span class="d-no" aria-hidden="true">${pad2(t.no)}</span>` : ""}<h2 class="d-title">${esc(t.title)}</h2>
     <div class="d-meta">${medal(author, 38)}<div class="who"><b>${esc(seatName(author))}</b><span>${esc(seatSub(author) || "")}${seatSub(author) ? " · " : ""}${dayLabel(t.at)}, ${clock(t.at)}</span></div>
     ${(t.to || []).length ? `<span class="spacer"></span><div class="to"><span class="tag-m">${k === "question" ? "Asking" : "For"}</span>${t.to.map(chipSeat).join("")}</div>` : ""}</div>
     ${t.body ? `<div class="d-text">${rich(t.body)}</div>` : ""}
-    ${block}${reacts}
+    ${block}${plan}${reacts}
     <div class="r-sep tag-m">${reps.length ? plural(reps.length, "reply", "replies") : "No replies yet"}</div>
     ${repsHTML}`;
+  Object.entries(keepV).forEach(([id, v]) => { const x = document.getElementById(id); if (x) x.value = v; });
+  if (keepF){ const x = document.getElementById(keepF.id); if (x){ x.focus({preventScroll:true}); try { if (keepF.s != null) x.setSelectionRange(keepF.s, keepF.e); } catch (e){} } }
   if (S.stickDrawer || (atBottom && S.growDrawer)){ body.scrollTop = body.scrollHeight; } else body.scrollTop = keep;
   S.stickDrawer = false; S.growDrawer = false;
   const inp = $("#d-input"); inp.disabled = !canPost();
@@ -1814,6 +1938,9 @@ function renderAdmin(){
     <section class="adm-sec"><h2>Chat channels</h2><p>Channels are topic rooms for chat. Check-ins post to the Daily channel, so keep it if you use check-ins. Messages in a deleted channel stop showing.</p>
       ${d.channels.map(c => `<div class="adm-chan" data-cid="${esc(c.id)}"><span class="hash">#</span><input data-cf="name" value="${esc(c.name)}" maxlength="30" aria-label="Channel name"><input data-cf="desc" value="${esc(c.desc || "")}" maxlength="100" placeholder="Description" aria-label="Channel description"><button type="button" class="icon-btn" data-adm="remove-chan" aria-label="Delete channel" ${d.channels.length <= 1 ? "disabled" : ""}>${I.trash}</button></div>`).join("")}
       <button type="button" class="btn" data-adm="add-chan">+ Add channel</button></section>
+    <section class="adm-sec"><h2>Projects</h2><p>Projects keep big pieces of work together: every topic can be filed under one, and each project shows in the sidebar with its open count.</p>
+      ${(d.projects || []).map(p => `<div class="adm-proj" data-pid="${esc(p.id)}"><span class="pdot" style="--pc:${cup(p.color).c}"></span><input data-pf="name" value="${esc(p.name)}" maxlength="40" aria-label="Project name"><div class="swatches">${CUPS.map(e => `<button type="button" class="sw${p.color === e.id ? " on" : ""}" data-adm="pcolor" data-v="${e.id}" style="--c:${e.c}" title="${e.name}" aria-label="${e.name}" aria-pressed="${p.color === e.id}"></button>`).join("")}</div><button type="button" class="icon-btn" data-adm="remove-proj" aria-label="Delete project">${I.trash}</button></div>`).join("")}
+      <button type="button" class="btn" data-adm="add-proj">+ Add project</button></section>
     <section class="adm-sec"><h2>Import</h2><p>One time: bring the topics, chat and names over from the old claude.ai HQ. Pick the export file you were sent.</p><input type="file" id="hq-import" accept=".json,application/json"></section>
     ${hasEx ? `<section class="adm-sec"><h2>Examples</h2><p>Some sample content is still on the board. Remove it in one click.</p><button type="button" class="btn danger" data-adm="clear-examples">Delete examples</button></section>` : ""}
     <div class="savebar"><span class="st${S.adminDirty ? " dirty" : ""}" id="save-st">${S.adminDirty ? "Unsaved changes" : "All changes saved"}</span>
@@ -1871,7 +1998,7 @@ function writeErr(e){
 async function createThread(data){
   const id = rid("t");
   const no = S.threads.reduce((m, t) => Math.max(m, t.no || 0), 0) + 1;
-  const doc = {no, kind:data.kind, title:data.title, body:data.body, to:data.to, seat:S.mySeat, by:S.uid || null, at:Date.now(), status:data.kind === "idea" ? "new" : "open", pinned:false};
+  const doc = {no, kind:data.kind, title:data.title, body:data.body, to:data.to, seat:S.mySeat, by:S.uid || null, at:Date.now(), status:data.kind === "idea" ? "new" : "open", pinned:false, project:data.project || null, owner:data.owner || null, due:data.due || null, steps:[]};
   if (data.kind === "decision"){ doc.options = data.options; doc.decided = null; }
   try { await S.db.doc("threads/" + id).set(doc); toast("Posted to the board"); return id; } catch (e){ writeErr(e); return null; }
 }
@@ -1979,6 +2106,9 @@ function openNew(kind){
   $("#nt-kinds").innerHTML = KIND_ORDER.map(k => `<label style="--kc:var(--k-${k})"><input type="radio" name="nt-kind" value="${k}" ${k === S.newKind ? "checked" : ""}>${kbadge(k)}${KINDS[k].label}</label>`).join("");
   $("#nt-title").value = ""; $("#nt-body").value = "";
   $("#nt-opts").innerHTML = ""; addOpt(); addOpt();
+  $("#nt-proj").innerHTML = [["", "None"], ...(S.roster.projects || []).map(p => [p.id, p.name, p.color])].map(([id, n, c]) => `<button type="button" class="chip${c ? " pchip" : ""}" data-ntproj="${esc(id)}" aria-pressed="${(S.project !== "all" ? S.project : "") === id}" ${c ? `style="--pc:${cup(c).c}"` : ""}>${esc(n)}</button>`).join("");
+  $("#nt-owner").innerHTML = `<option value="">Nobody yet</option>` + seats().map(s => `<option value="${esc(s.id)}">${esc(seatName(s))}</option>`).join("");
+  $("#nt-due").value = "";
   $("#nt-to").innerHTML = seats().filter(s => s.id !== S.mySeat).map(s => `<button type="button" class="chip" data-to="${esc(s.id)}" aria-pressed="false">${medal(s, 22)}${esc(seatName(s))}</button>`).join("");
   syncNewKind();
   $("#modal").hidden = false;
@@ -2072,6 +2202,9 @@ document.addEventListener("click", e => {
   if ((el = q("[data-view]"))){ go(el.dataset.view); return; }
   if ((el = q("[data-chan]"))){ S.channel = el.dataset.chan; if (!S.channel.startsWith("dm-")) S.lastChan = S.channel; go("chat"); return; }
   if ((el = q("[data-new]"))){ openNew(el.dataset.new); return; }
+  if ((el = q("[data-project]"))){ S.project = el.dataset.project; document.body.classList.remove("rail-open"); if (S.view !== "topics") go("topics"); else schedule(); return; }
+  if ((el = q("[data-layout]"))){ S.layout = el.dataset.layout; LS.set("layout", S.layout); schedule(); return; }
+  if ((el = q("[data-ntproj]"))){ document.querySelectorAll("[data-ntproj]").forEach(b => b.setAttribute("aria-pressed", String(b === el))); return; }
   if ((el = q("[data-filter]"))){ S.filter = el.dataset.filter; schedule(); return; }
   if ((el = q("[data-toggle]"))){ S[el.dataset.toggle] = !S[el.dataset.toggle]; schedule(); return; }
   if ((el = q("[data-open]"))){ openThread(el.dataset.open); return; }
@@ -2089,6 +2222,8 @@ document.addEventListener("click", e => {
     $(".g-table").scrollIntoView({behavior:smooth, block:"start"});
     return;
   }
+  if ((el = q("[data-step-toggle]"))){ const sid = el.closest("[data-step]").dataset.step; const th = S.threads.find(x => x.id === S.openId); if (th && canPost()) updateThread(th.id, {steps:stepsOf(th).map(x => x.id === sid ? {...x, done:!x.done, doneAt:Date.now()} : x)}); return; }
+  if ((el = q("[data-step-del]"))){ armThen(el, () => { const sid = el.closest("[data-step]").dataset.step; const th = S.threads.find(x => x.id === S.openId); if (th) updateThread(th.id, {steps:stepsOf(th).filter(x => x.id !== sid)}); }); return; }
   if ((el = q("[data-del-msg]"))){ armThen(el, () => { const [doc, item] = el.dataset.delMsg.split("|"); removeItem("chatDocs", "chat", doc, item); }); return; }
   if ((el = q("[data-del-reply]"))){ armThen(el, () => { const [doc, item] = el.dataset.delReply.split("|"); removeItem("replyDocs", "replies", doc, item); }); return; }
   if ((el = q("[data-adm]"))){ admClick(el); return; }
@@ -2116,6 +2251,10 @@ function admClick(el){
   const a = el.dataset.adm; const d = S.adminDraft; if (!d) return;
   const seatEl = el.closest("[data-sid]"); const s = seatEl ? d.seats.find(x => x.id === seatEl.dataset.sid) : null;
   const chEl = el.closest("[data-cid]");
+  const pEl = el.closest("[data-pid]");
+  if (a === "add-proj"){ d.projects = d.projects || []; d.projects.push({id:rid("p"), name:"New project", color:CUPS[d.projects.length % CUPS.length].id}); adminDirty(); renderAdmin(); return; }
+  if (a === "remove-proj" && pEl){ d.projects = (d.projects || []).filter(p => p.id !== pEl.dataset.pid); adminDirty(); renderAdmin(); return; }
+  if (a === "pcolor" && pEl){ const p = (d.projects || []).find(x => x.id === pEl.dataset.pid); if (p){ p.color = el.dataset.v; adminDirty(); renderAdmin(); } return; }
   if (a === "name" && s){ s.name = el.dataset.v; adminDirty(); renderAdmin(); }
   else if (a === "role" && s){ s.role = el.dataset.v; adminDirty(); renderAdmin(); }
   else if (a === "color" && s){ s.color = el.dataset.v; adminDirty(); renderAdmin(); }
@@ -2132,6 +2271,8 @@ function admClick(el){
 $("#admin-scroll").addEventListener("input", e => {
   const el = e.target; const d = S.adminDraft; if (!d) return;
   if (el.dataset.sp){ d.space[el.dataset.sp] = el.value; adminDirty(); return; }
+  const pEl = el.closest("[data-pid]");
+  if (pEl && el.dataset.pf){ const p = (d.projects || []).find(x => x.id === pEl.dataset.pid); if (p){ p[el.dataset.pf] = el.value; adminDirty(); } return; }
   const chEl = el.closest("[data-cid]");
   if (chEl && el.dataset.cf){ const c = d.channels.find(x => x.id === chEl.dataset.cid); if (c){ c[el.dataset.cf] = el.value; adminDirty(); } return; }
   const seatEl = el.closest("[data-sid]"); if (!seatEl) return;
@@ -2169,6 +2310,18 @@ $("#dock-note-form").addEventListener("submit", e => {
   dock(mine.state, v); inp.value = ""; inp.blur();
 });
 $("#scrim").addEventListener("click", closeDrawer);
+$("#t-search").addEventListener("input", e => { S.q = e.target.value.trim(); schedule(); });
+$("#t-sort").addEventListener("change", e => { S.sort = e.target.value; LS.set("sort", S.sort); schedule(); });
+document.addEventListener("change", e => { const el = e.target; if (el && el.dataset && el.dataset.plan && S.openId && canPost()) updateThread(S.openId, {[el.dataset.plan]:el.value || null}); });
+document.addEventListener("submit", e => {
+  if (!e.target || e.target.id !== "step-add") return;
+  e.preventDefault();
+  const th = S.threads.find(x => x.id === S.openId); const v = $("#step-text").value.trim();
+  if (!th || !v || !canPost()) return;
+  const step = {id:rid("st"), text:v.slice(0, 200), done:false, seat:$("#step-seat").value || null, due:$("#step-due").value || null, at:Date.now(), by:S.mySeat || null};
+  updateThread(th.id, {steps:[...stepsOf(th), step]});
+  $("#step-text").value = ""; $("#step-due").value = "";
+});
 $("#me-x").innerHTML = I.close;
 $("#me-modal").addEventListener("click", e => { if (e.target.id === "me-modal") closeMe(); });
 $("#me-form").addEventListener("submit", async e => {
@@ -2198,6 +2351,8 @@ $("#nt-form").addEventListener("submit", async e => {
   e.preventDefault();
   const title = $("#nt-title").value.trim(); if (!title) return;
   const data = {kind:S.newKind, title, body:$("#nt-body").value.trim(), to:[...document.querySelectorAll('#nt-to [aria-pressed="true"]')].map(b => b.dataset.to)};
+  const pb = document.querySelector('#nt-proj [aria-pressed="true"]');
+  data.project = (pb && pb.dataset.ntproj) || null; data.owner = $("#nt-owner").value || null; data.due = $("#nt-due").value || null;
   if (data.kind === "decision"){
     data.options = [...document.querySelectorAll("#nt-opts input")].map(i => i.value.trim()).filter(Boolean);
     if (data.options.length < 2){ toast("A decision needs at least two options."); return; }
