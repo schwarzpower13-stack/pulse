@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ka">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Pulse Life</title>
+<meta name="theme-color" content="#0C0E17">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Pulse Life">
+<link rel="apple-touch-icon" href="../icon-180.png">
+<link rel="icon" href="../icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+:root{color-scheme:dark;--m1:#8FB3FF;--m2:#FFB199;--m3:#C9A7FF}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:#0C0E17;color:#EEF0F8;font:16px/1.5 -apple-system,BlinkMacSystemFont,"Noto Sans Georgian","Segoe UI",sans-serif;display:grid;place-items:center;padding:24px 16px;text-align:center;overflow:hidden}
+.bg{position:fixed;inset:-20vmax;z-index:-1;filter:blur(70px);opacity:.55}
+.bg i{position:absolute;width:60vmax;height:60vmax;border-radius:50%;animation:d 26s ease-in-out infinite alternate}
+.bg i:nth-child(1){background:radial-gradient(circle,var(--m1),transparent 62%);left:-5vmax;top:-10vmax}
+.bg i:nth-child(2){background:radial-gradient(circle,var(--m2),transparent 62%);right:-15vmax;top:20vmax;animation-delay:-9s}
+.bg i:nth-child(3){background:radial-gradient(circle,var(--m3),transparent 62%);left:10vmax;bottom:-25vmax;animation-delay:-17s}
+@keyframes d{to{transform:translate(6vmax,5vmax) scale(1.1)}}
+.box{display:grid;justify-items:center;gap:16px;max-width:420px}
+.orb{width:150px;height:150px;border-radius:50%;position:relative}
+.orb i{position:absolute;inset:0;border-radius:50%;mix-blend-mode:screen;animation:s 10s linear infinite}
+.orb i:nth-child(1){background:radial-gradient(circle at 30% 30%,var(--m1),transparent 62%)}
+.orb i:nth-child(2){background:radial-gradient(circle at 70% 40%,var(--m2),transparent 60%);animation-direction:reverse}
+.orb i:nth-child(3){background:radial-gradient(circle at 45% 75%,var(--m3),transparent 60%);animation-duration:14s}
+.orb span{position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(255,255,255,.28),0 0 40px -4px var(--m1);animation:b 3s ease-in-out infinite}
+@keyframes s{to{transform:rotate(360deg)}}
+@keyframes b{50%{transform:scale(1.06)}}
+h1{margin:0;font-size:34px;letter-spacing:-.01em}
+p{margin:0;color:#9CA3BD}
+a.go{display:inline-flex;align-items:center;justify-content:center;min-height:54px;padding:14px 28px;border-radius:18px;background:linear-gradient(120deg,var(--m1),var(--m2));color:#10131F;font-weight:700;font-size:17px;text-decoration:none;box-shadow:0 10px 30px -12px var(--m1)}
+small{color:#9CA3BD;font-size:13px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<div class="bg" aria-hidden="true"><i></i><i></i><i></i></div>
+<main class="box">
+  <div class="orb" aria-hidden="true"><i></i><i></i><i></i><span></span></div>
+  <h1>Pulse Life</h1>
+  <p id="msg">Pulse იხსნება…</p>
+  <a class="go" id="go" href="https://claude.ai/artifact/DiQPZLAjYd5vsEY7HPejNc">გახსნა</a>
+  <small>Pulse Life მუშაობს შენი Claude-ის ანგარიშით, claude.ai-ზე.</small>
+</main>
+<script>
+(function(){
+  var url = "https://claude.ai/artifact/DiQPZLAjYd5vsEY7HPejNc";
+  var standalone = window.navigator.standalone === true || (window.matchMedia && matchMedia("(display-mode: standalone)").matches);
+  /* Opened from the Home Screen icon: go straight into Pulse Life. Opened in Safari: stay so it can be added to the Home Screen. */
+  if (standalone) setTimeout(function(){ location.href = url; }, 700);
+  else document.getElementById("msg").textContent = "დაამატე მთავარ ეკრანზე: გაზიარება → Add to Home Screen. მერე აიკონიდან პირდაპირ Pulse Life გაიხსნება.";
+})();
+</script>
+</body>
+</html>
