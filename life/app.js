@@ -157,31 +157,137 @@ async function connectCloud(){
   } catch(e){ console.warn("cloud unavailable", e); setSync("local"); }
 }
 
-/* ---------- Claude ---------- */
+/* ---------- AI: claude.ai (artifact) or the person's own free key (phone app) ---------- */
 let sampler = null, aiState = "wait"; /* wait | ok | none | denied */
 let busy = 0;
 function setBusy(d){ busy = Math.max(0, busy + d); document.body.classList.toggle("thinking", busy > 0); }
 if (window.claude && claude.use){ claude.use("sample").then(fn => { sampler = fn; aiState = fn ? "ok" : "none"; route(); }).catch(() => { aiState = "none"; route(); }); }
 else aiState = "none";
-function aiReady(){ return aiState === "ok" && !!sampler; }
+const PROVIDERS = {
+  gemini:{label:"Google Gemini", free:true, keyUrl:"https://aistudio.google.com/apikey", models:["gemini-flash-latest","gemini-2.5-flash","gemini-2.0-flash"]},
+  openrouter:{label:"OpenRouter", free:true, keyUrl:"https://openrouter.ai/keys", url:"https://openrouter.ai/api/v1/chat/completions", models:["deepseek/deepseek-chat-v3-0324:free","meta-llama/llama-3.3-70b-instruct:free"]},
+  groq:{label:"Groq", free:true, keyUrl:"https://console.groq.com/keys", url:"https://api.groq.com/openai/v1/chat/completions", models:["llama-3.3-70b-versatile"]},
+  claude:{label:"Claude API", free:false, keyUrl:"https://console.anthropic.com/settings/keys", models:["claude-opus-5"]}
+};
+let aiCfg = Object.assign({provider:"gemini", key:"", model:""}, LS.get("ai", {}));
+function keyMode(){ return !(aiState === "ok" && sampler) && !!aiCfg.key; }
+function aiReady(){ return (aiState === "ok" && !!sampler) || !!aiCfg.key; }
 function errText(e){
   const c = e && e.code;
   if (c === "not_granted" || c === "sampling_disabled" || c === "not_declared" || c === "capability_disabled" || c === "capability_removed"){ aiState = "denied"; return t("err_denied"); }
+  if (c === "no_key") return t("err_nokey");
+  if (c === "bad_key") return t("err_key");
+  if (c === "net") return t("err_net");
   if (c === "rate_limited") return t("err_rate");
   if (c === "session_expired") return t("err_session");
   if (c === "refused") return t("err_refused");
   if (c === "prompt_too_large") return t("err_big");
   if (c === "invalid_json") return t("err_json");
   if (c === "cancelled") return "";
-  return t("err_generic");
+  return t("err_generic") + (e && e.message && keyMode() ? " (" + String(e.message).slice(0, 120) + ")" : "");
+}
+function parseLoose(text){
+  let x = String(text || "").trim();
+  const fence = x.match(/```(?:json)?\s*([\s\S]*?)```/); if (fence) x = fence[1].trim();
+  try { return JSON.parse(x); } catch(e){}
+  const a = x.search(/[\[{]/), b = Math.max(x.lastIndexOf("}"), x.lastIndexOf("]"));
+  if (a >= 0 && b > a){ try { return JSON.parse(x.slice(a, b + 1)); } catch(e){} }
+  throw {code:"invalid_json", text};
+}
+function toTurns(input){
+  const turns = typeof input === "string" ? [{role:"user", content:input}] : input.slice();
+  const out = [];
+  turns.forEach(m => { const role = m.role === "assistant" ? "assistant" : "user"; if (out.length && out[out.length - 1].role === role) out[out.length - 1].content += "\n\n" + m.content; else out.push({role, content:String(m.content)}); });
+  if (!out.length || out[0].role !== "user") out.unshift({role:"user", content:"(start)"});
+  return out;
+}
+async function httpJSON(url, init){
+  let r;
+  try { r = await fetch(url, init); } catch(e){ if (e && e.name === "AbortError") throw {code:"cancelled"}; throw {code:"net", message:String(e && e.message || e)}; }
+  let j = null; try { j = await r.json(); } catch(e){}
+  if (!r.ok){
+    const msg = (j && (j.error && (j.error.message || j.error.status) || j.message)) || ("HTTP " + r.status);
+    if (r.status === 401 || r.status === 403 || (r.status === 400 && /api.?key|API_KEY/i.test(msg))) throw {code:"bad_key", message:msg};
+    if (r.status === 429) throw {code:"rate_limited", message:msg};
+    if (r.status === 404) throw {code:"no_model", message:msg};
+    if (r.status === 413) throw {code:"prompt_too_large", message:msg};
+    throw {code:"upstream_error", message:msg};
+  }
+  return j || {};
+}
+async function callKey(input, opt){
+  const P = PROVIDERS[aiCfg.provider] || PROVIDERS.gemini, turns = toTurns(input);
+  const jsonHint = opt.json ? "\n\n(Output: one valid JSON value only, no markdown fences, no commentary.)" : "";
+  turns[turns.length - 1].content += jsonHint;
+  const models = aiCfg.model ? [aiCfg.model].concat(P.models) : P.models;
+  let lastErr = null;
+  for (const model of [...new Set(models)]){
+    try {
+      let text = "";
+      if (aiCfg.provider === "gemini" || !PROVIDERS[aiCfg.provider]){
+        const body = {contents:turns.map(m => ({role:m.role === "assistant" ? "model" : "user", parts:[{text:m.content}]})), generationConfig:Object.assign({temperature:0.8, maxOutputTokens:32768}, opt.json ? {responseMimeType:"application/json"} : {})};
+        const j = await httpJSON("https://generativelanguage.googleapis.com/v1beta/models/" + encodeURIComponent(model) + ":generateContent?key=" + encodeURIComponent(aiCfg.key), {method:"POST", headers:{"content-type":"application/json"}, body:JSON.stringify(body), signal:opt.signal});
+        const cand = (j.candidates || [])[0];
+        if (!cand){ if (j.promptFeedback && j.promptFeedback.blockReason) throw {code:"refused"}; throw {code:"upstream_error", message:"empty answer"}; }
+        if (cand.finishReason === "SAFETY" || cand.finishReason === "PROHIBITED_CONTENT") throw {code:"refused"};
+        text = ((cand.content && cand.content.parts) || []).filter(p => !p.thought).map(p => p.text || "").join("");
+      } else if (aiCfg.provider === "claude"){
+        const body = {model, max_tokens:16000, messages:turns};
+        const headers = {"content-type":"application/json", "x-api-key":aiCfg.key, "anthropic-version":"2023-06-01", "anthropic-dangerous-direct-browser-access":"true"};
+        if (model === "claude-opus-5"){ body.fallbacks = "default"; headers["anthropic-beta"] = "server-side-fallback-2026-07-01"; }
+        const j = await httpJSON("https://api.anthropic.com/v1/messages", {method:"POST", headers, body:JSON.stringify(body), signal:opt.signal});
+        if (j.stop_reason === "refusal") throw {code:"refused"};
+        text = (j.content || []).filter(b => b.type === "text").map(b => b.text).join("");
+      } else {
+        const body = {model, messages:turns, temperature:0.8};
+        if (opt.json && aiCfg.provider === "groq") body.response_format = {type:"json_object"};
+        const j = await httpJSON(P.url, {method:"POST", headers:{"content-type":"application/json", "authorization":"Bearer " + aiCfg.key}, body:JSON.stringify(body), signal:opt.signal});
+        text = (((j.choices || [])[0] || {}).message || {}).content || "";
+      }
+      text = String(text).trim();
+      if (!text) throw {code:"upstream_error", message:"empty answer"};
+      if (opt.onText) try { opt.onText({text, delta:text}); } catch(e){}
+      if (opt.json) return parseLoose(text);
+      return {text, truncated:false};
+    } catch(e){ lastErr = e; if (!e || e.code !== "no_model") throw e; }
+  }
+  throw lastErr || {code:"upstream_error"};
 }
 async function ask(input, opt){
-  if (!aiReady()) throw {code: aiState === "denied" ? "not_granted" : "capability_disabled", message:"no ai"};
   opt = opt || {};
-  const o = {}; if (opt.tier) o.modelTier = opt.tier; if (opt.onText) o.onText = opt.onText; if (opt.signal) o.signal = opt.signal; if (opt.tools) o.tools = opt.tools; if (opt.cache !== undefined) o.cache = opt.cache;
+  if (!aiReady()) throw {code: aiState === "denied" ? "not_granted" : "no_key", message:"no ai"};
   setBusy(1);
-  try { return opt.json ? await sampler.json(input, o) : await sampler(input, o); }
-  finally { setBusy(-1); }
+  try {
+    if (aiState === "ok" && sampler){
+      const o = {}; if (opt.tier) o.modelTier = opt.tier; if (opt.onText) o.onText = opt.onText; if (opt.signal) o.signal = opt.signal; if (opt.cache !== undefined) o.cache = opt.cache;
+      return opt.json ? await sampler.json(input, o) : await sampler(input, o);
+    }
+    return await callKey(input, opt);
+  } finally { setBusy(-1); }
+}
+function aiSetupCard(onDone){
+  const card = h("section", {class:"card setup"});
+  const sel = h("select", {class:"field", id:"aiProv"}, Object.keys(PROVIDERS).map(k => h("option", {value:k, text:PROVIDERS[k].label + (PROVIDERS[k].free ? " · " + t("free") : " · " + t("paid")), selected:aiCfg.provider === k ? true : null})));
+  const key = h("input", {class:"field", id:"aiKey", type:"password", autocomplete:"off", placeholder:t("ai_key_ph"), value:aiCfg.key ? "••••••" + aiCfg.key.slice(-4) : ""});
+  const model = h("input", {class:"field", id:"aiModel", autocomplete:"off", placeholder:t("ai_model_ph"), value:aiCfg.model || ""});
+  const getKey = h("a", {class:"btn sm", href:PROVIDERS[aiCfg.provider].keyUrl, target:"_blank", rel:"noopener"}, t("ai_get_key"));
+  sel.addEventListener("change", () => { getKey.href = PROVIDERS[sel.value].keyUrl; });
+  const out = h("p", {class:"muted small"});
+  const btn = h("button", {class:"btn primary", type:"button", onclick:async () => {
+    const k = key.value.trim();
+    const next = {provider:sel.value, key:/^•/.test(k) ? aiCfg.key : k, model:model.value.trim()};
+    if (!next.key){ out.textContent = t("err_nokey"); return; }
+    const prev = aiCfg; aiCfg = next;
+    btn.disabled = true; out.textContent = t("ai_testing");
+    try { await ask("Reply with the single word OK.", {tier:"quick", cache:false}); LS.set("ai", aiCfg); out.textContent = "✓ " + t("ai_ok"); toast(t("ai_ok"), PROVIDERS[aiCfg.provider].label); if (onDone) setTimeout(onDone, 500); }
+    catch(e){ aiCfg = prev; out.textContent = "✗ " + errText(e); }
+    finally { btn.disabled = false; }
+  }}, t("ai_connect"));
+  card.append(h("div", {class:"card-k"}, icon("spark", 16), t("ai_title")), h("p", {text:t("ai_sub")}),
+    h("ol", {class:"setup-steps"}, h("li", {text:t("ai_s1")}), h("li", {text:t("ai_s2")}), h("li", {text:t("ai_s3")})),
+    getKey, key, btn, out,
+    h("details", {class:"fold"}, h("summary", {text:t("ai_more")}), h("div", {class:"stack tight", style:"margin-top:8px"}, sel, model, h("p", {class:"muted small", text:t("ai_more_note")}))));
+  return card;
 }
 const langLine = () => "Write every human-readable string in " + LANG_NAME[lang] + (lang === "ka" ? " (Georgian script, natural modern Georgian)" : "") + ". If the person clearly writes in another language, mirror their language.";
 
@@ -382,13 +488,16 @@ function renderGenesis(main){
   const enough = (c.interview.turns || 0) >= 8 || avg >= 45;
   buildBtn.hidden = !enough;
   const doneBtn = c.interview.done ? h("button", {class:"btn ghost", type:"button", onclick:() => go("you")}, t("back_to_app")) : null;
+  if (!aiReady() && aiState !== "wait"){
+    wrap.append(top, aiSetupCard(() => route()), h("p", {class:"muted small center", text:t("ai_skip_note")}), h("button", {class:"btn ghost sm", type:"button", onclick:startBuild}, t("ai_skip")));
+    main.append(wrap); return;
+  }
   wrap.append(top, log, h("div", {class:"gen-dock"}, h("div", {class:"composer"}, ta, sendBtn), note, h("div", {class:"row gap"}, buildBtn, doneBtn)));
   main.append(wrap);
   requestAnimationFrame(() => { log.scrollTop = log.scrollHeight; window.scrollTo(0, document.body.scrollHeight); autoGrow(ta); });
-  if (aiState === "none" || aiState === "denied"){ note.textContent = t("gen_noai"); buildBtn.hidden = false; }
   async function send(){
     const txt = ta.value.trim(); if (!txt || busy) return;
-    if (!aiReady()){ note.textContent = aiState === "wait" ? t("ai_wait") : t("gen_noai"); return; }
+    if (!aiReady()){ note.textContent = aiState === "wait" ? t("ai_wait") : t("err_nokey"); return; }
     chat.push({r:"u", t:txt, at:Date.now()}); save("chat");
     ta.value = ""; LS.set("genDraft", ""); autoGrow(ta);
     log.append(bubble("u", txt));
@@ -889,17 +998,28 @@ function renderCoach(main){
     coachCtl = new AbortController();
     const turns = [{role:"user", content:coachPreamble()}].concat(msgs.slice(-16).map(m => ({role:m.r === "u" ? "user" : "assistant", content:m.t})));
     const opts = {tier:S.core.settings.depth === "deep" ? "complex" : "default", signal:coachCtl.signal, onText:({text}) => { b.classList.remove("typing"); bt.textContent = text; window.scrollTo(0, document.body.scrollHeight); }};
-    let useTools = true;
-    try { const lim = await sampler.limits(); useTools = !!(lim && lim.tools); } catch(e){ useTools = false; }
-    if (useTools) opts.tools = coachTools(); else opts.cache = false;
     try {
-      const r = await ask(turns, opts);
-      const text = r.text.trim();
+      let text;
+      if (sampler && aiState === "ok"){
+        let useTools = true;
+        try { const lim = await sampler.limits(); useTools = !!(lim && lim.tools); } catch(e){ useTools = false; }
+        if (useTools) opts.tools = coachTools(); else opts.cache = false;
+        text = (await ask(turns, opts)).text.trim();
+      } else {
+        /* key providers: the same tools, as a JSON action list the page executes */
+        const tools = coachTools();
+        turns[0].content += "\n\nYOUR ACTIONS. You can change his app with these actions:\n" + tools.map(x => "- " + x.name + ": " + x.description + " args: " + JSON.stringify(x.inputSchema.properties)).join("\n") + "\n\nAlways reply with ONLY one JSON object: {\"reply\": \"what he reads\", \"actions\": [{\"name\": action name, \"args\": {...}}]}. Use an empty actions list when nothing in the app should change.";
+        const j = await ask(turns, {json:true, signal:coachCtl.signal});
+        const done = [];
+        for (const a of (Array.isArray(j.actions) ? j.actions : [])){ const tool = tools.find(x => x.name === (a && a.name)); if (!tool) continue; try { await tool.execute(a.args || {}, {signal:coachCtl.signal}); done.push(a.name); } catch(err){ console.warn("action failed", a, err); } }
+        text = String(j.reply || "").trim() || t("coach_done");
+        if (done.length) refreshSoon();
+      }
       b.classList.remove("typing"); bt.textContent = text;
       msgs.push({r:"a", t:text, at:Date.now()}); save("chat");
     } catch(e){
-      const keep = e && e.text; b.classList.remove("typing");
-      if (keep){ bt.textContent = keep; msgs.push({r:"a", t:keep, at:Date.now()}); save("chat"); } else b.remove();
+      const keep = e && e.text && !(e.code === "invalid_json"); b.classList.remove("typing");
+      if (keep){ bt.textContent = e.text; msgs.push({r:"a", t:e.text, at:Date.now()}); save("chat"); } else b.remove();
       const msg = errText(e); if (msg) note.textContent = msg;
     } finally { sendBtn.hidden = false; stopBtn.hidden = true; }
   }
@@ -1086,6 +1206,7 @@ function renderYou(main){
   all.sort((a, b) => a.start.localeCompare(b.start)).forEach(x => rl.append(h("div", {class:"rt", style:areaStyle(x.area)}, h("b", {text:x.start + "–" + x.end}), h("span", null, x.text, h("small", {text:DOW_ORDER.filter(i => x.dows.includes(i)).map(dowShort).join(" ") + (x.kind === "fixed" ? " · " + t("k_fixed") : "")})), h("button", {class:"x", type:"button", "aria-label":t("delete"), onclick:e => confirmInline(e.currentTarget, "✕?", () => { S.core.routine = S.core.routine.filter(y => y !== x); S.core.fixed = S.core.fixed.filter(y => y !== x && y.id !== x.src); save("core"); route(); })}, icon("x", 12)))));
   wrap.append(rl);
   /* settings */
+  if (!(sampler && aiState === "ok")) wrap.append(sectionTitle(t("ai_title")), aiSetupCard(() => route()));
   wrap.append(sectionTitle(t("settings")));
   wrap.append(h("section", {class:"card"},
     h("p", {class:"q", text:t("language")}), chips(["ka","en"], lang, v => { lang = v; LS.set("lang", v); document.documentElement.lang = v; route(); }, ["ქართული","English"]),
@@ -1099,9 +1220,15 @@ function renderYou(main){
 }
 function lab(text, el){ return h("label", {class:"lab"}, h("small", {text}), el); }
 async function exportData(){
+  const name = "pulse-life-" + T.date + ".json";
   const data = JSON.stringify({app:"pulse-life", v:3, at:new Date().toISOString(), core:S.core, chat:S.chat, pages:S.pages, months:S.months, days:S.days}, null, 1);
-  try { const dl = window.claude && claude.use ? await claude.use("downloads") : null; if (!dl) throw {code:"unavailable"}; await dl.save({filename:"pulse-life-" + T.date + ".json", data}); toast(t("exported"), ""); }
-  catch(e){ if (e && e.code !== "cancelled" && e.code !== "declined") toast(t("oops"), t("export_fail")); }
+  try {
+    const dl = window.claude && claude.use ? await claude.use("downloads") : null;
+    if (dl){ await dl.save({filename:name, data}); toast(t("exported"), ""); return; }
+    const file = new File([data], name, {type:"application/json"});
+    if (navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({files:[file], title:name}); toast(t("exported"), ""); return; }
+    const a = document.createElement("a"); a.href = URL.createObjectURL(file); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000); toast(t("exported"), "");
+  } catch(e){ if (e && e.code !== "cancelled" && e.code !== "declined" && e.name !== "AbortError") toast(t("oops"), t("export_fail")); }
 }
 function importData(e){
   const f = e.target.files[0]; if (!f) return;
