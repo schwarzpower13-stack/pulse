@@ -1,7 +1,7 @@
 {
   "name": "Pulse · Jibladze",
   "short_name": "Pulse",
-  "description": "Private marketing assistant of Mr. Jibladze for Smart Cup.",
+  "description": "Private life and marketing assistant of Mr. Jibladze: month planning, daily schedule, habits, focus and goals.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
