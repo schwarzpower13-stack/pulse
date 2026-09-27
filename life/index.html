@@ -47,7 +47,7 @@ p{margin:0}
 @keyframes drift{0%{transform:translate(0,0) scale(1)}50%{transform:translate(6vmax,4vmax) scale(1.12)}100%{transform:translate(-5vmax,7vmax) scale(.95)}}
 
 /* orb */
-.orb{position:relative;border-radius:50%;flex:none;width:36px;height:36px;isolation:isolate}
+.orb{position:relative;border-radius:50%;flex:none;width:36px;height:36px;isolation:isolate;clip-path:circle(50%)}
 .orb i{position:absolute;inset:0;border-radius:50%;mix-blend-mode:screen;animation:spin 14s linear infinite}
 .orb i:nth-child(1){background:radial-gradient(circle at 30% 30%,var(--m1),transparent 62%)}
 .orb i:nth-child(2){background:radial-gradient(circle at 70% 40%,var(--m2),transparent 60%);animation-duration:19s;animation-direction:reverse}
@@ -237,6 +237,10 @@ body:not(.genesis-mode) .gen-dock{bottom:calc(env(safe-area-inset-bottom,0px) + 
 .cdots i{width:5px;height:5px;border-radius:50%;background:var(--area)}
 .cd.today{border-color:var(--text)} .cd.sel{box-shadow:0 0 0 2px var(--m1);border-color:transparent} .cd.past{opacity:.6}
 .qa{gap:8px}
+.setup{border-color:color-mix(in srgb,var(--m1) 45%,transparent)}
+.setup-steps{margin:0;padding-left:20px;display:grid;gap:6px;font-size:14.5px}
+.setup-steps li::marker{color:var(--m1);font-weight:700}
+a.btn{text-decoration:none}
 
 /* coach */
 .coach{max-width:680px;margin:0 auto;display:flex;flex-direction:column;min-height:calc(100vh - 170px)}

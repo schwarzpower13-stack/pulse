@@ -1,5 +1,10 @@
 window.PULSE_I18N = {
 en: {
+  free:"free", paid:"paid", ai_title:"Connect the AI brain", ai_sub:"Pulse thinks with a free AI from Google (Gemini). You connect it once with a free key. No card, no payment.",
+  ai_s1:"Tap \"Get a free key\". Google AI Studio opens; sign in with your Google account.", ai_s2:"Tap \"Create API key\" and copy the key.", ai_s3:"Come back, paste it below and tap \"Connect\".",
+  ai_get_key:"Get a free key", ai_key_ph:"Paste the key here", ai_model_ph:"Model (optional)", ai_connect:"Connect", ai_testing:"Checking the key…", ai_ok:"AI connected", ai_more:"Other AI options", ai_more_note:"OpenRouter and Groq also have free keys. Claude API is paid. The key stays only on this phone.",
+  ai_skip_note:"No key? You can still start with a basic plan from the built-in engine and connect the AI later.", ai_skip:"Start without AI",
+  err_nokey:"Connect the AI first (a free key, one minute).", err_key:"The key was rejected. Copy it again and paste it.", err_net:"No internet connection.", coach_done:"Done.",
   tab_today:"Today", tab_plan:"Plan", tab_coach:"Pulse", tab_growth:"Growth", tab_you:"You",
   g_night:"Late night", g_morning:"Good morning", g_day:"Good afternoon", g_evening:"Good evening",
   d_story:"Story", d_daily:"Daily life", d_body:"Body", d_work:"Work", d_money:"Money", d_people:"People", d_mind:"Mind", d_values:"Beliefs", d_shadows:"Shadows", d_dreams:"Dreams",
@@ -50,6 +55,11 @@ en: {
   starting:"Starting now · {t}"
 },
 ka: {
+  free:"უფასო", paid:"ფასიანი", ai_title:"დააკავშირე AI ტვინი", ai_sub:"Pulse ფიქრობს Google-ის უფასო AI-ით (Gemini). ერთხელ დააკავშირებ უფასო გასაღებით. ბარათი და გადახდა არ სჭირდება.",
+  ai_s1:"დააჭირე „უფასო გასაღების აღებას“. გაიხსნება Google AI Studio; შედი შენი Google-ის ანგარიშით.", ai_s2:"დააჭირე „Create API key“-ს და დააკოპირე გასაღები.", ai_s3:"დაბრუნდი აქ, ჩასვი ქვემოთ და დააჭირე „დაკავშირებას“.",
+  ai_get_key:"უფასო გასაღების აღება", ai_key_ph:"ჩასვი გასაღები აქ", ai_model_ph:"მოდელი (არასავალდებულო)", ai_connect:"დაკავშირება", ai_testing:"ვამოწმებ გასაღებს…", ai_ok:"AI დაკავშირებულია", ai_more:"სხვა AI ვარიანტები", ai_more_note:"OpenRouter-საც და Groq-საც აქვთ უფასო გასაღები. Claude API ფასიანია. გასაღები მხოლოდ ამ ტელეფონზე ინახება.",
+  ai_skip_note:"გასაღები არ გაქვს? შეგიძლია დაიწყო ჩაშენებული ძრავის მარტივი გეგმით და AI მოგვიანებით დააკავშირო.", ai_skip:"დაწყება AI-ს გარეშე",
+  err_nokey:"ჯერ დააკავშირე AI (უფასო გასაღები, ერთი წუთი).", err_key:"გასაღები არ მიიღო. თავიდან დააკოპირე და ჩასვი.", err_net:"ინტერნეტი არ არის.", coach_done:"გაკეთდა.",
   tab_today:"დღეს", tab_plan:"გეგმა", tab_coach:"Pulse", tab_growth:"ზრდა", tab_you:"შენ",
   g_night:"ღამე მშვიდობისა", g_morning:"დილა მშვიდობისა", g_day:"გამარჯობა", g_evening:"საღამო მშვიდობისა",
   d_story:"ისტორია", d_daily:"ყოველდღიურობა", d_body:"სხეული", d_work:"საქმე", d_money:"ფული", d_people:"ადამიანები", d_mind:"გონება", d_values:"რწმენა", d_shadows:"სუსტი მხარეები", d_dreams:"ოცნებები",
