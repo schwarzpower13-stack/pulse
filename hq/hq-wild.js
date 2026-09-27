@@ -1,28 +1,11 @@
 /* Smart Cup HQ: the "In the Wild" portal.
    A glowing cup in the rail (and in the phone header) opens the Smart Cup · In the Wild prototype in a
    full-screen layer over HQ. HQ keeps running underneath, so nothing reloads and nobody signs in again.
-   The prototype is internal, so it ships encrypted (wild.bin: 12-byte IV + AES-256-GCM). Its key is kept
-   in Firestore at team/wild, which only the team can read; the admin sets it once by opening HQ with
-   #wild=<key> in the address. The prototype's question board is stored under wild/ (see firestore.rules). */
+   The prototype is internal, so it is not in this public repo: the admin adds the page file once from
+   inside HQ and it is kept in Firestore at team/wild, which only the team can read (only the admin can
+   write it). The prototype's question board is stored under wild/ (see firestore.rules). */
 (function(){
   "use strict";
-  var BIN = new URL("wild.bin", (document.currentScript && document.currentScript.src) || location.href).href;
-  var PENDING = "hq:wild-unlock";
-  var ls = {
-    get: function(k){ try { return localStorage.getItem(k); } catch (e){ return null; } },
-    set: function(k, v){ try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e){} }
-  };
-
-  /* an unlock link: remember the key and take it out of the address straight away */
-  function readHash(){
-    var m = /(?:^#|&)wild=([A-Za-z0-9_-]{43})(?:&|$)/.exec(location.hash);
-    if (!m) return false;
-    ls.set(PENDING, m[1]);
-    try { history.replaceState(history.state, "", location.pathname + location.search); } catch (e){}
-    return true;
-  }
-  readHash();
-
   var css = [
     ".wild-portal{position:relative;isolation:isolate;overflow:hidden;flex:none;display:flex;align-items:center;gap:12px;width:calc(100% - 28px);margin:2px 14px 8px;padding:9px 12px 9px 8px;border:1.5px solid rgba(240,168,60,.6);background:radial-gradient(130% 160% at 0% 50%,rgba(240,168,60,.17),rgba(193,59,214,.07) 55%,transparent 80%),var(--panel);color:var(--text);cursor:pointer;text-align:left;transition:border-color .25s,box-shadow .25s,transform .25s}",
     ".wild-portal::after{content:\"\";position:absolute;inset:0;z-index:-1;background:linear-gradient(100deg,transparent 35%,rgba(243,239,232,.11) 48%,transparent 62%);transform:translateX(-110%);animation:wpSheen 6s ease-in-out infinite}",
@@ -62,6 +45,8 @@
     ".wild-msg .wild-cup{width:64px;height:76px}",
     ".wild-msg p{margin:0;max-width:40ch}",
     ".wild-msg b{color:var(--text)}",
+    ".wild-new{flex:none;height:28px;padding:0 10px;border:1px solid var(--line-2);background:transparent;color:var(--muted);font:600 9.5px/1 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;cursor:pointer}",
+    ".wild-new:hover{border-color:var(--amber);color:var(--amber)}",
     ".wild-msg button{padding:10px 16px;border:1.5px solid var(--amber);background:transparent;color:var(--amber);font:700 10.5px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;cursor:pointer}",
     "@media (max-width:860px){.wild-portal{margin-top:0}.wild-note{min-width:0}}",
     "@media (max-width:420px){.wild-title{letter-spacing:.1em}}",
@@ -89,10 +74,11 @@
   ov.id = "wild"; ov.hidden = true;
   ov.setAttribute("role", "dialog"); ov.setAttribute("aria-modal", "true"); ov.setAttribute("aria-label", "Smart Cup in the Wild");
   ov.innerHTML = '<div class="wild-bar"><button type="button" class="wild-back" id="wild-close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg><span>HQ</span></button>' +
-    '<div class="wild-title"><i></i><span>Smart Cup · <b>In the Wild</b></span></div><span class="wild-note" id="wild-note"></span></div>' +
-    '<div class="wild-stage" id="wild-stage"><div class="wild-msg" id="wild-msg"></div></div>';
+    '<div class="wild-title"><i></i><span>Smart Cup · <b>In the Wild</b></span></div><span class="wild-note" id="wild-note"></span><button type="button" class="wild-new" id="wild-new" hidden>&#8635; File</button></div>' +
+    '<div class="wild-stage" id="wild-stage"><div class="wild-msg" id="wild-msg"></div></div><input type="file" id="wild-file" accept=".html,.htm,text/html" hidden>';
   document.body.appendChild(ov);
   var stage = ov.querySelector("#wild-stage"), box = ov.querySelector("#wild-msg"), note = ov.querySelector("#wild-note"), back = ov.querySelector("#wild-close");
+  var pick = ov.querySelector("#wild-file"), renew = ov.querySelector("#wild-new");
 
   /* HQ's own signed-in api (served by hq-firebase.js once the team member is in) */
   var hqApi = null;
@@ -101,17 +87,11 @@
     return hqApi;
   }
 
-  function b64u(s){ s = s.replace(/-/g, "+").replace(/_/g, "/"); while (s.length % 4) s += "="; var b = atob(s), u = new Uint8Array(b.length); for (var i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; }
-  function decrypt(k){
-    return fetch(BIN, {cache:"no-cache"}).then(function(r){ if (!r.ok) throw new Error("HTTP " + r.status); return r.arrayBuffer(); }).then(function(buf){
-      return crypto.subtle.importKey("raw", b64u(k), "AES-GCM", false, ["decrypt"]).then(function(key){
-        return crypto.subtle.decrypt({name:"AES-GCM", iv:new Uint8Array(buf, 0, 12)}, key, new Uint8Array(buf, 12));
-      }).catch(function(){ throw {stale:true}; });
-    }).then(function(pt){ return new TextDecoder().decode(pt); });
+  function getHtml(){
+    return hq().then(function(h){ return h.db.doc("team/wild").get(); }).then(function(s){ var d = s && s.exists ? s.data() : null; return d && d.html || null; });
   }
-  function getKey(){
-    return hq().then(function(h){ return h.db.doc("team/wild").get(); }).then(function(s){ var d = s && s.exists ? s.data() : null; return d && d.k || null; });
-  }
+  var owner = null;
+  function isAdmin(){ if (owner === null) owner = hq().then(function(h){ return h.user.isOwner(); }).catch(function(){ return false; }); return owner; }
 
   /* the prototype's board lives in wild/ instead of the room's threads/; everything else is HQ's own api */
   var subs = [];
@@ -143,14 +123,19 @@
     box.hidden = false;
     var t = {
       loading: "<p>Opening the prototype…</p>",
-      locked: "<p><b>Locked for now.</b><br>It opens here for the whole team as soon as the admin unlocks it once.</p>",
-      stale: "<p><b>A newer version is waiting.</b><br>The admin needs to unlock it once more, then it opens here for everyone.</p>",
+      locked: "<p><b>Not added yet.</b><br>It opens here for the whole team as soon as the admin adds the prototype.</p>",
+      add: '<p><b>Add the prototype once.</b><br>Choose the file <b>smart-cup-in-the-wild.html</b>. After that it opens here for the whole team.</p><button type="button" id="wild-pick">Choose the file</button>',
+      saving: "<p>Sharing it with the team…</p>",
+      bad: '<p><b>That isn\u2019t the prototype page.</b><br>Choose the file smart-cup-in-the-wild.html.</p><button type="button" id="wild-pick">Choose the file</button>',
+      denied: '<p><b>That didn\u2019t save.</b><br>Only the admin can add the prototype. Check your connection and try again.</p><button type="button" id="wild-pick">Choose the file</button>',
       error: '<p><b>Couldn’t open it.</b><br>Check your connection, then try again.</p><button type="button" id="wild-retry">Try again</button>'
     }[kind];
     box.innerHTML = CUP + t;
   }
   function mount(t){
-    if (!blobUrl){
+    if (!blobUrl || t !== html){
+      if (blobUrl) URL.revokeObjectURL(blobUrl);
+      html = t;
       var doc = t.replace(/<head>/i, function(h){ return h + BRIDGE; });
       blobUrl = URL.createObjectURL(new Blob([doc], {type:"text/html"}));
     }
@@ -162,11 +147,30 @@
   }
   function load(){
     say("loading");
-    var p = html ? Promise.resolve(html) : getKey().then(function(k){ if (!k) throw {locked:true}; return decrypt(k); }).then(function(t){ html = t; return t; });
-    p.then(function(t){ if (!ov.hidden && !frame) mount(t); }, function(e){ if (!ov.hidden) say(e && e.locked ? "locked" : e && e.stale ? "stale" : "error"); });
+    isAdmin().then(function(a){ renew.hidden = !a; });
+    getHtml().then(function(t){
+      if (ov.hidden || frame) return;
+      if (t) return mount(t);
+      return isAdmin().then(function(a){ if (!ov.hidden) say(a ? "add" : "locked"); });
+    }, function(){ if (ov.hidden || frame) return; if (html) mount(html); else say("error"); });
   }
+  /* the admin adds (or replaces) the prototype page; it is shared through team/wild */
+  function upload(file){
+    if (!file) return;
+    file.text().then(function(t){
+      if (!/<html[\s>]/i.test(t) || !/<\/html>/i.test(t) || new Blob([t]).size > 950000) { say("bad"); return; }
+      say("saving");
+      return hq().then(function(h){ return h.db.doc("team/wild").set({html:t, name:file.name, at:Date.now()}); }).then(function(){
+        if (ov.hidden) return;
+        if (frame){ frame.remove(); frame = null; }
+        mount(t); flash("Shared with the team");
+      }, function(){ if (!ov.hidden) say("denied"); });
+    });
+  }
+  pick.addEventListener("change", function(){ var f = pick.files && pick.files[0]; pick.value = ""; upload(f); });
+  renew.addEventListener("click", function(){ pick.click(); });
   function flash(text){ note.textContent = text || ""; clearTimeout(noteT); if (text) noteT = setTimeout(function(){ note.textContent = ""; }, 5000); }
-  function open(from, msg){
+  function open(from){
     if (!ov.hidden) return;
     lastFocus = from || document.activeElement;
     var r = from && from.getBoundingClientRect ? from.getBoundingClientRect() : null;
@@ -174,7 +178,6 @@
     ov.style.setProperty("--oy", r && r.height ? (r.top + r.height / 2) + "px" : "50%");
     ov.hidden = false; ov.classList.remove("in"); void ov.offsetWidth; ov.classList.add("in");
     Array.prototype.forEach.call(document.body.children, function(el){ if (el !== ov && el.tagName !== "SCRIPT" && el.tagName !== "STYLE" && !el.inert){ el.inert = true; inerted.push(el); } });
-    flash(msg);
     try { history.pushState({hqWild:1}, ""); } catch (e){}
     back.focus({preventScroll:true});
     load();
@@ -193,31 +196,10 @@
   portal.addEventListener("click", function(){ open(portal); });
   mini.addEventListener("click", function(){ open(mini); });
   back.addEventListener("click", function(){ close(false); });
-  box.addEventListener("click", function(e){ if (e.target && e.target.id === "wild-retry") load(); });
+  box.addEventListener("click", function(e){
+    if (e.target && e.target.id === "wild-retry") load();
+    if (e.target && e.target.id === "wild-pick") pick.click();
+  });
   window.addEventListener("popstate", function(){ if (!ov.hidden) close(true); });
   document.addEventListener("keydown", function(e){ if (e.key === "Escape" && !ov.hidden){ e.stopPropagation(); e.preventDefault(); close(false); } }, true);
-
-  function entry(){ return window.matchMedia("(max-width: 860px)").matches ? mini : portal; }
-
-  /* the admin's one-time unlock: check the key really opens this version, then share it with the team */
-  function unlock(){
-    var pend = ls.get(PENDING);
-    if (!pend) return;
-    hq().then(function(h){
-      return h.user.isOwner().then(function(own){
-        if (!own){ ls.set(PENDING, null); return; }
-        return decrypt(pend).then(function(t){
-          html = t;
-          return h.db.doc("team/wild").set({k:pend, at:Date.now()});
-        }).then(function(){
-          ls.set(PENDING, null);
-          open(entry(), "Unlocked for the team");
-        }, function(e){
-          if (e && e.stale){ ls.set(PENDING, null); open(entry(), "Old unlock link"); }
-        });
-      });
-    }).catch(function(){});
-  }
-  unlock();
-  window.addEventListener("hashchange", function(){ if (readHash()) unlock(); });
 })();
