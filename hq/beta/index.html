@@ -312,6 +312,104 @@ body.coach-on .dock-quick[data-act="settings"]{animation:coachPing 1.6s ease-in-
 .live-empty{padding:18px 14px;font:400 11px/1.6 var(--f-mono);color:var(--muted)}
 .live-empty::before{content:"// ";color:var(--amber)}
 .live-dot{width:8px;height:8px;background:var(--red);border-radius:50%;box-shadow:0 0 8px 2px rgba(255,70,50,.5);animation:beat 1.4s ease-in-out infinite}
+/* photos and videos */
+.att{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch}
+.att-add{display:inline-flex;align-items:center;gap:8px;min-height:64px;padding:0 14px;border:1.5px dashed var(--line-3);background:transparent;color:var(--text);font:700 9.5px/1.2 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:border-color .2s,color .2s}
+.att-add:hover,.att-add:focus-within{border-color:var(--amber);color:var(--amber)}
+.att-add svg,.att-btn svg,.mt .play svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.att-add input,.att-btn input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.att-i{position:relative;width:64px;height:64px;flex:none;border:1.5px solid var(--line-2);background:#0c0a11;overflow:hidden}
+.att-i img,.att-i video{width:100%;height:100%;object-fit:cover;display:block}
+.att-i .bar{position:absolute;left:0;right:0;bottom:0;height:4px;background:rgba(4,3,8,.7)}
+.att-i .bar i{position:absolute;left:0;top:0;bottom:0;background:var(--amber);transition:width .2s}
+.att-i.ok{border-color:var(--lime)} .att-i.ok .bar{display:none}
+.att-i.err{border-color:var(--red)}
+.att-i .kind{position:absolute;left:4px;top:4px;padding:1px 4px;background:rgba(4,3,8,.8);font:700 8px/1.3 var(--f-mono);letter-spacing:.08em;color:var(--cream)}
+.att-i .x{position:absolute;right:2px;top:2px;width:20px;height:20px;border:0;background:rgba(4,3,8,.85);color:var(--cream);font:700 12px/20px var(--f-mono);cursor:pointer;padding:0}
+.att-tray{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}
+.att-tray:empty{display:none}
+.att-btn{position:relative;width:36px;height:36px;display:grid;place-items:center;flex:none;color:var(--muted);cursor:pointer;align-self:flex-end}
+.att-btn:hover{color:var(--amber)}
+.composer.has-att{padding-left:5px}
+.mg{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:6px;margin:10px 0 4px;max-width:560px}
+.mg.one{grid-template-columns:minmax(0,420px)}
+.mt{position:relative;display:block;width:100%;aspect-ratio:4/3;padding:0;border:1.5px solid var(--line-2);background:#0c0a11 center/cover no-repeat;cursor:zoom-in;overflow:hidden}
+.mg.one .mt{aspect-ratio:auto;min-height:120px;max-height:340px}
+.mt img{width:100%;height:100%;object-fit:cover;display:block}
+.mg.one .mt img{object-fit:contain;max-height:336px}
+.mt:hover{border-color:var(--amber)}
+.mt .play{position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;display:grid;place-items:center;background:rgba(4,3,8,.72);border:1.5px solid var(--cream);color:var(--cream)}
+.mt .play svg{width:18px;height:18px;fill:currentColor;stroke:none;margin-left:3px}
+.mt .kind{position:absolute;left:6px;bottom:6px;padding:2px 6px;background:rgba(4,3,8,.8);font:700 8.5px/1.3 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--cyan)}
+.mt.loading::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,rgba(243,239,232,.07) 50%,transparent 70%);animation:mtShim 1.2s linear infinite}
+@keyframes mtShim{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+#lb{position:fixed;inset:0;z-index:69;display:flex;align-items:center;justify-content:center;padding:max(56px,env(safe-area-inset-top,0px)) 12px max(16px,env(safe-area-inset-bottom,0px));background:rgba(4,3,8,.94)}
+#lb img,#lb video{max-width:100%;max-height:100%;display:block;box-shadow:0 0 0 1.5px var(--line-2)}
+#lb .lb-x{position:absolute;top:max(12px,env(safe-area-inset-top,0px));right:12px;height:36px;padding:0 14px;border:1.5px solid var(--cream);background:var(--void);color:var(--cream);font:700 10.5px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;cursor:pointer}
+#lb .lb-msg{font:500 12px/1.6 var(--f-mono);color:var(--muted)}
+/* up next: the team's run sheet */
+.un-dot{width:8px;height:8px;background:var(--amber);animation:sqBlink 1.4s steps(1) infinite}
+.un-seg{margin-left:auto;display:flex}
+.un-seg button{background:transparent;border:1px solid var(--line-2);color:var(--muted);font:700 9px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;padding:6px 9px;cursor:pointer}
+.un-seg button+button{border-left:0}
+.un-seg button[aria-pressed="true"]{background:var(--cream);border-color:var(--cream);color:var(--void)}
+.un-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-bottom:1.5px solid var(--cream)}
+.un-stats div{padding:11px 14px 10px;border-right:1px solid var(--line);min-width:0}
+.un-stats div:last-child{border-right:0}
+.un-stats b{display:block;font:800 26px/1 var(--f-body);letter-spacing:-.04em;color:var(--dim)}
+.un-stats span{display:block;margin-top:5px;font:600 8.5px/1.3 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.un-stats .late.on b{color:var(--red)} .un-stats .wk.on b{color:var(--amber)} .un-stats .ok.on b{color:var(--lime)}
+.un-row{position:relative;display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:11px;align-items:start;padding:11px 14px 11px 15px;border-bottom:1px solid var(--line);transition:background .2s}
+.un-row::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--rc,var(--line-2))}
+.un-row:hover{background:rgba(243,239,232,.04)}
+.un-row.late{background:rgba(255,70,50,.07)}
+.un-chk{width:20px;height:20px;margin-top:1px;padding:0;display:grid;place-items:center;border:1.5px solid var(--line-3);background:transparent;color:var(--void);cursor:pointer;transition:background .15s,border-color .15s,transform .15s}
+.un-chk:hover:not(:disabled){border-color:var(--lime);transform:scale(1.08)}
+.un-chk:disabled{cursor:default;opacity:.45}
+.un-chk svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round;opacity:0}
+.un-row.done .un-chk{background:var(--lime);border-color:var(--lime)}
+.un-row.done .un-chk svg{opacity:1;animation:unPop .35s cubic-bezier(.3,1.6,.5,1)}
+@keyframes unPop{0%{transform:scale(.3)}100%{transform:scale(1)}}
+.un-row.done .un-t{text-decoration:line-through;text-decoration-color:var(--lime);color:var(--dim)}
+.un-file{width:20px;height:20px;margin-top:1px;display:grid;place-items:center;border:1.5px dashed var(--line-2);font:800 10px/1 var(--f-mono);color:var(--rc,var(--amber))}
+.un-main{all:unset;cursor:pointer;min-width:0;display:flex;flex-direction:column;gap:5px}
+.un-main:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+.un-t{font:600 13.5px/1.35 var(--f-body);color:var(--text);overflow-wrap:anywhere}
+.un-main:hover .un-t{color:#fff}
+.un-m{display:flex;align-items:center;gap:6px;min-width:0;font:600 9px/1.2 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);white-space:nowrap;overflow:hidden}
+.un-m i{flex:none;width:7px;height:7px;background:var(--rc,var(--dim))}
+.un-m span{overflow:hidden;text-overflow:ellipsis}
+.un-r{display:flex;flex-direction:column;align-items:flex-end;gap:7px}
+.un-more{display:block;width:100%;padding:10px 14px;border:0;border-bottom:1px solid var(--line);background:transparent;color:var(--amber);font:700 9.5px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;text-align:left;cursor:pointer}
+.un-more:hover{background:rgba(240,168,60,.07)}
+.un-empty{padding:20px 14px 18px;font:400 11px/1.65 var(--f-mono);color:var(--muted);border-bottom:1px solid var(--line)}
+.un-empty b{display:block;margin-bottom:4px;font:800 15px/1.2 var(--f-body);letter-spacing:-.01em;text-transform:uppercase;color:var(--text)}
+.un-projs{padding:12px 14px 14px;display:flex;flex-direction:column;gap:11px}
+.un-projs .tag-m{color:var(--dim)}
+.un-p{all:unset;cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 10px;align-items:center}
+.un-p:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+.un-p .n{font:700 12.5px/1.2 var(--f-body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.un-p .c{font:600 9.5px/1 var(--f-mono);letter-spacing:.08em;color:var(--muted)}
+.un-p .c b{color:var(--text)}
+.un-p .bar{grid-column:1/-1;height:6px;background:rgba(243,239,232,.08);position:relative;overflow:hidden}
+.un-p .bar i{position:absolute;left:0;top:0;bottom:0;background:var(--pc);box-shadow:0 0 10px var(--pc);transition:width .6s cubic-bezier(.22,1,.36,1)}
+.un-p:hover .n{color:var(--pc)}
+/* the cup: a full crew is a match */
+.cupsvg .halo-m,.cupsvg .scr-m{opacity:0;transition:opacity 1.2s ease}
+.cupsvg.matched .halo-m{opacity:1}
+.cupsvg.matched .scr-m{opacity:.62}
+.cupsvg.matched .scr-glow{opacity:.1}
+.cupsvg.matched .orbit{stroke:rgba(34,228,255,.34)}
+.cupsvg.matched .beat{stroke:var(--cream);animation-duration:1.8s}
+.cupsvg.matched .beat.b{stroke:var(--amber);animation-delay:.9s}
+.cupsvg.matched .lk{stroke:var(--cyan);opacity:.95;stroke-dasharray:2 4;animation-duration:.55s}
+.cupsvg.matched .sat.on .dot{filter:drop-shadow(0 0 8px var(--cyan))}
+.cupsvg.matched .t1,.cupsvg.matched .t3{fill:#DFF8FF}
+.cupsvg .burst{fill:none;stroke:#fff;opacity:0;transform-box:fill-box;transform-origin:center}
+.cupsvg.flash .burst{animation:cupBurst 1.1s cubic-bezier(.22,1,.36,1)}
+.cupsvg.flash .burst.b2{animation-delay:.18s;stroke:var(--cyan)}
+@keyframes cupBurst{0%{transform:scale(.12);opacity:.95;stroke-width:4}100%{transform:scale(2.1);opacity:0;stroke-width:.3}}
+@media (prefers-reduced-motion:reduce){.cupsvg.flash .burst{animation:none}.un-row.done .un-chk svg{animation:none}}
 
 @media (max-width:1180px){.home-grid{grid-template-columns:minmax(0,1fr);grid-template-areas:"who" "table" "live";grid-template-rows:auto}}
 @media (max-width:1040px){.hero2{grid-template-columns:minmax(0,1fr)}.hero-cup{max-width:540px;width:100%;margin:0 auto}.bokeh{inset:34% -8% 0 -8%}}
@@ -812,8 +910,8 @@ button.opt:disabled{cursor:default}
 
             <aside class="g-live" aria-labelledby="live-h">
               <div class="panel">
-                <div class="panel-h"><span class="live-dot" aria-hidden="true"></span><span class="tag-m">SEC 03</span><h3 id="live-h">Live <span>wire</span></h3></div>
-                <div class="live-list" id="live"></div>
+                <div class="panel-h"><span class="un-dot" aria-hidden="true"></span><span class="tag-m">SEC 03</span><h3 id="live-h">Up <span>next</span></h3><div class="un-seg" id="un-seg" role="group" aria-label="Whose run sheet"></div></div>
+                <div id="live"></div>
               </div>
             </aside>
           </div>
@@ -851,7 +949,9 @@ button.opt:disabled{cursor:default}
   <div class="d-head" id="d-head"></div>
   <div class="d-body" id="d-body"></div>
   <div class="d-foot">
-    <div class="composer">
+    <div class="att-tray" id="d-att"></div>
+    <div class="composer has-att">
+      <label class="att-btn" title="Add photos or videos"><input type="file" id="d-file" accept="image/*,video/*" multiple aria-label="Add photos or videos"><span id="d-clip"></span></label>
       <textarea id="d-input" rows="1" placeholder="Reply… (type @ to mention someone)" aria-label="Reply"></textarea>
       <button class="send" id="d-send" aria-label="Send reply" disabled></button>
     </div>
@@ -865,6 +965,7 @@ button.opt:disabled{cursor:default}
       <div class="kind-pick" id="nt-kinds" role="radiogroup" aria-label="Topic type"></div>
       <label class="fld"><span>Title</span><input id="nt-title" maxlength="140" required placeholder="Short and clear"></label>
       <label class="fld"><span>Details</span><textarea id="nt-body" rows="4" maxlength="4000" placeholder="Context, links, anything that helps"></textarea></label>
+      <div class="fld"><span>Photos &amp; videos (optional)</span><div class="att" id="nt-att"></div></div>
       <div class="fld" id="nt-opts-wrap" hidden><span>Options (2–5)</span><div id="nt-opts"></div><div><button type="button" class="btn sm" id="nt-add-opt">+ Option</button></div></div>
       <div class="fld"><span id="nt-to-label">Who is this for? (optional)</span><div class="chips" id="nt-to"></div></div>
       <div class="fld"><span>Project</span><div class="chips" id="nt-proj"></div></div>
@@ -919,6 +1020,7 @@ button.opt:disabled{cursor:default}
 </div>
 
 <div id="toast" role="status" aria-live="polite"></div>
+<div id="lb" hidden role="dialog" aria-modal="true" aria-label="Photo or video"><button type="button" class="lb-x" data-lb-close>Close</button><div id="lb-in"></div></div>
 
 <div id="hq-gate" hidden>
   <div class="hq-g-in">
@@ -969,6 +1071,8 @@ const I = {
   topics:'<svg viewBox="0 0 24 24"><path d="M4 4.5h7v7H4zM13 4.5h7v4h-7zM13 10.5h7v9h-7zM4 13.5h7v6H4z"/></svg>',
   send:'<svg viewBox="0 0 24 24"><path d="M4.5 12 19.5 4.5l-5.5 15-3-6.5z"/><path d="M11 13l8.5-8.5"/></svg>',
   close:'<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>',
+  clip:'<svg viewBox="0 0 24 24"><path d="M20 11.5l-7.8 7.8a5 5 0 0 1-7.1-7.1l8.2-8.2a3.3 3.3 0 0 1 4.7 4.7l-8.2 8.2a1.7 1.7 0 0 1-2.4-2.4l7.4-7.4"/></svg>',
+  play:'<svg viewBox="0 0 24 24"><path d="M7 4.5v15l12-7.5z"/></svg>',
   pin:'<svg viewBox="0 0 24 24"><path d="M9 3.5h6l-1 6.5 3 3H7l3-3zM12 13v7.5"/></svg>',
   trash:'<svg viewBox="0 0 24 24"><path d="M5 7h14M10 7V4.5h4V7M7 7l1 12.5h8L17 7"/></svg>',
   reply:'<svg viewBox="0 0 24 24"><path d="M4.5 5.5h15v10h-9l-6 4.5z"/></svg>',
@@ -1092,7 +1196,7 @@ const S = {
   roster:clone(DEFAULT_ROSTER), claims:{}, threads:[], replyDocs:new Map(), chatDocs:new Map(), markDocs:new Map(), checkins:new Map(), names:new Map(),
   obStep:null, meColor:null,
   loaded:{roster:false, claims:false, threads:false, chat:false},
-  view:"topics", channel:"general", filter:"all", project:"all", q:"", sort:LS.get("sort", "activity"), layout:LS.get("layout", "grid"), onlyMine:false, onlyOpen:false, openId:null,
+  view:"topics", channel:"general", filter:"all", project:"all", q:"", sort:LS.get("sort", "activity"), layout:LS.get("layout", "grid"), unScope:LS.get("unScope", "mine"), unAll:false, onlyMine:false, onlyOpen:false, openId:null,
   mySeat:null, mySrc:null, forceOnboard:false, peers:[], online:new Set(), profiles:{},
   eff:{bySeat:{}, byUid:{}}, idx:null,
   adminDraft:null, adminDirty:false, sugg:{},
@@ -1435,7 +1539,7 @@ function cardHTML(t){
     <h3>${esc(t.title)}</h3>
     ${t.body ? `<p class="excerpt">${esc(t.body)}</p>` : ""}
     ${special}
-    <div class="card-foot">${medal(seat, 24)}<span><b>${esc(seatName(seat))}</b></span><span class="spacer"></span>${reactMini(t.id)}<span class="replies" title="${esc(plural(reps.length, "reply", "replies"))}"><span class="ic">${I.reply}</span><span class="mono">${reps.length}</span>${repliers.length ? `<span class="stack">${repliers.map(s => medal(s, 20)).join("")}</span>` : ""}</span></div>
+    <div class="card-foot">${medal(seat, 24)}<span><b>${esc(seatName(seat))}</b></span><span class="spacer"></span>${mediaCount(t) ? `<span class="replies" title="Photos and videos"><span class="ic">${I.clip}</span><span class="mono">${mediaCount(t)}</span></span>` : ""}${reactMini(t.id)}<span class="replies" title="${esc(plural(reps.length, "reply", "replies"))}"><span class="ic">${I.reply}</span><span class="mono">${reps.length}</span>${repliers.length ? `<span class="stack">${repliers.map(s => medal(s, 20)).join("")}</span>` : ""}</span></div>
   </article>`;
 }
 const projOf = id => (S.roster.projects || []).find(p => p.id === id) || null;
@@ -1480,23 +1584,29 @@ const CUP_SVG = `<svg class="cupsvg" viewBox="-118 -24 436 322" role="img" aria-
     <linearGradient id="cupS" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".14"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
     <radialGradient id="cupG" cx="50%" cy="42%" r="60%"><stop offset="0" stop-color="#F0A83C" stop-opacity=".9"/><stop offset="1" stop-color="#3a2a10" stop-opacity=".2"/></radialGradient>
     <radialGradient id="cupL"><stop offset="0" stop-color="#F0A83C" stop-opacity=".34"/><stop offset=".7" stop-color="#F0A83C" stop-opacity="0"/></radialGradient>
+    <radialGradient id="cupM" cx="50%" cy="50%" r="58%"><stop offset="0" stop-color="#C8F5FF" stop-opacity=".95"/><stop offset=".5" stop-color="#22E4FF" stop-opacity=".45"/><stop offset="1" stop-color="#0A1E28" stop-opacity=".25"/></radialGradient>
+    <radialGradient id="cupLM"><stop offset="0" stop-color="#22E4FF" stop-opacity=".32"/><stop offset=".45" stop-color="#C13BD6" stop-opacity=".12"/><stop offset=".75" stop-color="#22E4FF" stop-opacity="0"/></radialGradient>
     <filter id="ledGlow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation=".6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
   </defs>
   <ellipse class="orbit" cx="100" cy="135" rx="165" ry="135"/>
   <g id="cup-links"></g>
   <circle cx="100" cy="132" r="125" fill="url(#cupL)"/>
+  <circle class="halo-m" cx="100" cy="132" r="140" fill="url(#cupLM)"/>
   <path d="M28 46 L172 46 L152 232 Q100 254 48 232 Z" fill="url(#cupB)" stroke="#4a465a" stroke-width="1.5"/>
   <ellipse cx="100" cy="46" rx="72" ry="13" fill="#241f30" stroke="#4a465a" stroke-width="1.5"/>
   <path d="M40 60 L160 60 L142 220 Q100 238 58 220 Z" fill="url(#cupS)"/>
   <g id="cup-conn"></g>
   <ellipse cx="100" cy="132" rx="52" ry="50" fill="#0c0a11" stroke="#3a3548" stroke-width="2"/>
   <ellipse class="scr-glow" cx="100" cy="132" rx="52" ry="50" fill="url(#cupG)"/>
+  <ellipse class="scr-m" cx="100" cy="132" rx="52" ry="50" fill="url(#cupM)"/>
   <ellipse class="beat" cx="100" cy="132" rx="52" ry="50"/>
   <ellipse class="beat b" cx="100" cy="132" rx="52" ry="50"/>
   <text class="t1" id="cup-t1" x="100" y="115"></text>
   <g id="cup-led"></g>
   <text class="t3" id="cup-t3" x="100" y="153"></text>
   <g id="cup-sats"></g>
+  <ellipse class="burst" cx="100" cy="132" rx="52" ry="50"/>
+  <ellipse class="burst b2" cx="100" cy="132" rx="52" ry="50"/>
 </svg>`;
 /* LED dot-matrix, ported from the Smart Cup page */
 const LED = (() => {
@@ -1506,6 +1616,7 @@ const LED = (() => {
     "|":["1","1","1","1","1","1","1"]," ":["0","0","0","0","0","0","0"]
   };
   const W = {
+    "M":["10001","11011","10101","10101","10001","10001","10001"],"A":["01110","10001","10001","11111","10001","10001","10001"],"T":["11111","00100","00100","00100","00100","00100","00100"],"C":["01110","10001","10000","10000","10000","10001","01110"],"H":["10001","10001","10001","11111","10001","10001","10001"],"D":["11110","10001","10001","10001","10001","10001","11110"],
     "P":["11110","10001","10001","11110","10000","10000","10000"],"U":["10001","10001","10001","10001","10001","10001","01110"],"L":["10000","10000","10000","10000","10000","10000","11111"],"S":["01111","10000","10000","01110","00001","00001","11110"],"E":["11111","10000","10000","11110","10000","10000","11111"]," ":["00","00","00","00","00","00","00"]
   };
   const glyph = (ch, font) => font === "wide" ? (W[ch] || G[ch]) : (G[ch] || W[ch]);
@@ -1522,11 +1633,12 @@ const LED = (() => {
       dots[r][c] = l;
     }}
     return {
-      show(str, anchor){
+      show(str, anchor, font){
+        const fo = font || o.font;
         const grid = Array.from({length:7}, () => []);
-        let col = Math.floor((cols - width(anchor || str, o.font)) / 2);
+        let col = Math.floor((cols - width(anchor || str, fo)) / 2);
         for (const ch of str){
-          const g = glyph(ch, o.font); if (!g) continue;
+          const g = glyph(ch, fo); if (!g) continue;
           for (let r = 0; r < 7; r++) for (let k = 0; k < g[r].length; k++) if (g[r].charAt(k) === "1") grid[r][col + k] = 1;
           col += g[0].length + 1;
         }
@@ -1536,7 +1648,7 @@ const LED = (() => {
   }
   return {make};
 })();
-let connTimer = 0;
+let connTimer = 0, CUPLED = null;
 function startConnecting(led){
   const word = "CONNECTING";
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches){ led.show(word, word + " |"); return; }
@@ -1553,8 +1665,7 @@ function renderCup(){
   const box = $("#h-cup");
   if (!box.firstElementChild){
     box.innerHTML = CUP_SVG;
-    LED.make($("#cup-led"), {cols:31, pitch:2.05, cx:100, y0:125.8, rOn:.92, font:"wide"}).show("PULSE");
-    startConnecting(LED.make($("#cup-conn"), {cols:52, pitch:1.3, cx:100, y0:199, rOn:.52, curve:.0006}));
+    CUPLED = {main:LED.make($("#cup-led"), {cols:31, pitch:2.05, cx:100, y0:125.8, rOn:.92, font:"wide"}), conn:LED.make($("#cup-conn"), {cols:52, pitch:1.3, cx:100, y0:199, rOn:.52, curve:.0006}), matched:null, t0:Date.now()};
   }
   const list = seats(); const n = Math.max(list.length, 1);
   let links = "", sats = "", onl = 0;
@@ -1570,9 +1681,26 @@ function renderCup(){
     sats += `<g class="sat${on ? " on" : ""}" transform="translate(${x} ${y})" style="--c:${c.c}">${d && d.state === "office" ? '<circle class="ring" r="14"/>' : ""}<circle class="dot" r="14" fill="${c.c}"/><text class="ini" y="4.6" fill="${c.f}">${esc(initial(s))}</text><text class="lbl ${above ? "above" : "below"}" y="${above ? -21 : 28}">${esc(trunc(seatName(s).toUpperCase(), 12))}</text>${st ? `<text class="st ${d ? DOCK[d.state].cls : ""}" y="${above ? -31 : 38}">${st}</text>` : ""}</g>`;
   });
   $("#cup-links").innerHTML = links; $("#cup-sats").innerHTML = sats;
+  /* the whole crew online is a match: the cup plays the prototype's match moment */
+  const matched = list.length > 1 && onl >= list.length;
+  if (CUPLED.matched !== matched){
+    const was = CUPLED.matched, svg = box.firstElementChild;
+    CUPLED.matched = matched;
+    svg.classList.toggle("matched", matched);
+    svg.setAttribute("aria-label", matched ? "Match: the whole crew is online" : "The crew around the cup");
+    if (matched){
+      clearInterval(connTimer);
+      CUPLED.main.show("MATCH"); CUPLED.conn.show("MATCHED", null, "wide");
+      svg.classList.remove("flash"); void svg.getBoundingClientRect(); svg.classList.add("flash");
+      if (was === false && Date.now() - CUPLED.t0 > 8000) toast("Full crew online. It's a match.");
+    } else {
+      svg.classList.remove("flash");
+      CUPLED.main.show("PULSE"); startConnecting(CUPLED.conn);
+    }
+  }
   const sp = S.roster.space; const goal = (sp.goal || "").trim(); const days = goal ? daysTo(sp.goalDate) : null;
   const has = days != null;
-  $("#cup-t1").textContent = has ? trunc(goal.toUpperCase(), 16) : "A SMART CUP";
+  $("#cup-t1").textContent = matched ? "FULL CREW" : has ? trunc(goal.toUpperCase(), 16) : "A SMART CUP";
   $("#cup-t3").textContent = has ? (days > 0 ? plural(days, "DAY", "DAYS") + " TO GO" : days === 0 ? "IT'S TODAY" : plural(-days, "DAY", "DAYS") + " OVER") : `${onl}/${list.length} CREW ONLINE`;
 }
 function renderHero(){
@@ -1600,31 +1728,103 @@ function renderInstr(){
     + cell("done", done, "Settled this week", done ? "good" : "")
     + cell("office", `${off}/${seats().length}`, "At the office", off ? "hot" : "");
 }
-function renderLive(){
-  const ev = [];
-  const chName = id => (S.roster.channels.find(c => c.id === id) || {}).name;
+/* ---------- photos and videos ---------- */
+const MURL = new Map();
+function mediaHTML(list){
+  list = Array.isArray(list) ? list.filter(m => m && m.id) : [];
+  if (!list.length) return "";
+  return `<div class="mg${list.length === 1 ? " one" : ""}">${list.map(m => {
+    const src = m.kind === "image" ? MURL.get(m.id) : m.poster;
+    const img = src ? `<img alt="" src="${esc(src)}"${m.kind === "image" ? "" : ""}>` : (m.kind === "image" ? `<img alt="" data-mimg="${esc(m.id)}">` : "");
+    return `<button type="button" class="mt${!src && m.kind === "image" ? " loading" : ""}" data-media="${esc(m.id)}" data-mkind="${m.kind === "video" ? "video" : "image"}" aria-label="${m.kind === "video" ? "Play video" : "Open photo"}${m.name ? ": " + esc(m.name) : ""}">${img}${m.kind === "video" ? `<span class="play">${I.play}</span><span class="kind">Video</span>` : ""}</button>`;
+  }).join("")}</div>`;
+}
+function hydrateMedia(root){
+  if (!S.media || !root) return;
+  root.querySelectorAll("img[data-mimg]").forEach(img => {
+    const id = img.dataset.mimg; img.removeAttribute("data-mimg");
+    S.media.url(id).then(u => { MURL.set(id, u); img.src = u; img.closest(".mt")?.classList.remove("loading"); }, () => { img.closest(".mt")?.classList.remove("loading"); });
+  });
+}
+function openLightbox(id, kind){
+  const lb = $("#lb"), box = $("#lb-in");
+  box.innerHTML = `<div class="lb-msg">Loading…</div>`; lb.hidden = false; lb.querySelector(".lb-x").focus();
+  S.media.url(id).then(u => {
+    if (lb.hidden) return;
+    if (kind === "image") MURL.set(id, u);
+    box.innerHTML = kind === "video" ? `<video src="${esc(u)}" controls autoplay playsinline></video>` : `<img alt="" src="${esc(u)}">`;
+  }, () => { box.innerHTML = `<div class="lb-msg">Couldn't load it. Check your connection and try again.</div>`; });
+}
+function closeLightbox(){ const lb = $("#lb"); if (lb.hidden) return; lb.hidden = true; $("#lb-in").innerHTML = ""; }
+S.att = {nt:[], d:[]};
+function attBusy(w){ return S.att[w].some(a => a.st === "up"); }
+function attReady(w){ return S.att[w].filter(a => a.st === "ok").map(a => a.ref); }
+function renderAtt(w){
+  const box = w === "nt" ? $("#nt-att") : $("#d-att"); if (!box) return;
+  const items = S.att[w].map(a => `<div class="att-i ${a.st}" title="${esc(a.name)}">${a.kind === "video" ? `<video src="${esc(a.local)}" muted playsinline preload="metadata"></video>` : `<img alt="" src="${esc(a.local)}">`}<span class="kind">${a.kind === "video" ? "VID" : "IMG"}${a.st === "err" ? " · FAILED" : ""}</span><span class="bar"><i style="width:${Math.round(a.pct * 100)}%"></i></span><button type="button" class="x" data-att-rm="${w}|${esc(a.key)}" aria-label="Remove">×</button></div>`).join("");
+  box.innerHTML = w === "nt" ? items + `<label class="att-add">${I.clip}<span>Add photo / video</span><input type="file" id="nt-file" accept="image/*,video/*" multiple></label>` : items;
+  if (w === "d") $("#d-input").dispatchEvent(new Event("input"));
+  if (w === "nt") $("#nt-submit").disabled = attBusy("nt");
+}
+function addFiles(w, files){
+  if (!S.media){ toast("Uploads aren't available right now."); return; }
+  for (const file of files){
+    const isV = /^video\//.test(file.type), isI = /^image\//.test(file.type);
+    if (!isV && !isI){ toast("Only photos and videos can be added."); continue; }
+    if (isV && file.size > S.media.maxVideo){ toast(`${file.name} is over 30 MB. Trim it or record at 720p.`); continue; }
+    const a = {key:rid("u"), name:file.name, kind:isV ? "video" : "image", st:"up", pct:0, ref:null, local:URL.createObjectURL(file)};
+    S.att[w].push(a); renderAtt(w);
+    S.media.put(file, p => { a.pct = p; renderAtt(w); }).then(ref => { a.ref = ref; a.st = "ok"; if (ref.kind === "image") MURL.set(ref.id, a.local); renderAtt(w); },
+      e => { a.st = "err"; renderAtt(w); toast(e && e.message && e.code !== "unavailable" ? e.message : "Upload failed. Check your connection and try again."); });
+  }
+}
+function clearAtt(w, keepUrls){ S.att[w].forEach(a => { if (!keepUrls || a.st !== "ok") URL.revokeObjectURL(a.local); }); S.att[w] = []; renderAtt(w); }
+function mediaCount(t){ return (Array.isArray(t.media) ? t.media.length : 0) + repliesFor(t.id).reduce((n, r) => n + (Array.isArray(r.media) ? r.media.length : 0), 0); }
+
+/* Up next: every dated step and file in one run sheet, ticked off right here */
+const CHECK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+function runSheet(mine){
+  const rows = [], now = Date.now(), wk = now - 7 * 864e5;
+  let doneWk = 0;
   for (const t of S.threads){
-    ev.push({at:t.at, seat:t.seat, type:"topic", t});
-    if (t.kind === "decision" && t.status === "decided" && t.decidedAt) ev.push({at:t.decidedAt, seat:t.decidedBy, type:"decided", t});
+    const pr = projOf(t.project);
+    for (const x of stepsOf(t)){
+      const who = x.seat || t.owner || "";
+      if (mine && who !== S.mySeat) continue;
+      if (x.done){ if ((x.doneAt || 0) > wk) doneWk++; if (now - (x.doneAt || 0) > 20 * 6e4) continue; }
+      else if (!x.due && !mine) continue;
+      rows.push({t, x, pr, due:x.due || "", seat:who, done:!!x.done});
+    }
+    if (t.due && !topicDone(t) && (!mine || t.owner === S.mySeat)) rows.push({t, x:null, pr, due:t.due, seat:t.owner || "", done:false});
   }
-  for (const [tid, arr] of S.idx.replies){ const t = S.threads.find(x => x.id === tid); if (t) for (const r of arr) ev.push({at:r.at, seat:r.seat, type:"reply", t, text:r.text}); }
-  for (const [ch, arr] of S.idx.chat){
-    if (ch.startsWith("dm-")){ const o = chanObj(ch); if (o && o.mine) for (const m of arr) ev.push({at:m.at, seat:m.seat, type:"dm", ch, other:o.other, text:m.text}); continue; }
-    const n = chName(ch); if (n) for (const m of arr) ev.push({at:m.at, seat:m.seat, type:m.bot ? "check" : "chat", ch, n, text:m.text, state:m.state});
+  rows.sort((a, b) => (a.done ? 1 : 0) - (b.done ? 1 : 0) || (a.due || "9999").localeCompare(b.due || "9999") || (a.t.no || 0) - (b.t.no || 0));
+  const open = rows.filter(r => !r.done && r.due);
+  return {rows, late:open.filter(r => daysTo(r.due) < 0).length, week:open.filter(r => { const n = daysTo(r.due); return n >= 0 && n <= 7; }).length, doneWk};
+}
+function renderLive(){
+  const mine = S.unScope !== "team" && !!S.mySeat;
+  $("#un-seg").innerHTML = [["mine", "Mine"], ["team", "Team"]].map(([k, l]) => `<button type="button" data-un-scope="${k}" aria-pressed="${(k === "mine") === mine}"${k === "mine" && !S.mySeat ? " disabled" : ""}>${l}</button>`).join("");
+  const R = runSheet(mine), can = canPost();
+  const stat = (cls, n, label) => `<div class="${cls}${n ? " on" : ""}"><b>${n}</b><span>${label}</span></div>`;
+  let h = `<div class="un-stats">${stat("late", R.late, "Late")}${stat("wk", R.week, "Due in 7 days")}${stat("ok", R.doneWk, "Done this week")}</div>`;
+  const list = S.unAll ? R.rows : R.rows.slice(0, 7);
+  h += list.length ? list.map(r => {
+    const du = r.due ? dueInfo(r.due, r.done) : null, s = seatById(r.seat), pc = r.pr ? cup(r.pr.color).c : "";
+    const meta = [r.pr ? esc(r.pr.name) : "", r.t.no ? "File " + topicNo(r.t) : "", r.x ? esc(trunc(r.t.title, 34)) : ""].filter(Boolean).join(" · ");
+    const lead = r.x ? `<button type="button" class="un-chk" data-un-step="${esc(r.t.id)}|${esc(r.x.id)}" aria-pressed="${r.done}" aria-label="${r.done ? "Mark not done" : "Mark done"}"${can ? "" : " disabled"}>${CHECK}</button>` : `<span class="un-file" aria-hidden="true">#</span>`;
+    return `<div class="un-row${r.done ? " done" : du && du.cls === "late" ? " late" : ""}"${pc ? ` style="--rc:${pc}"` : ""}>${lead}<button type="button" class="un-main" data-open="${esc(r.t.id)}"><span class="un-t">${esc(r.x ? r.x.text : r.t.title)}</span><span class="un-m"><i></i><span>${meta || (r.x ? "Step" : "Whole file")}</span></span></button><span class="un-r">${du ? `<span class="due ${du.cls}">${esc(du.txt)}</span>` : `<span class="due">No date</span>`}${s ? medal(s, 22) : ""}</span></div>`;
+  }).join("") + (R.rows.length > 7 ? `<button type="button" class="un-more" data-un-more>${S.unAll ? "Show less" : "+ " + (R.rows.length - 7) + " more"}</button>` : "")
+    : `<div class="un-empty"><b>${mine ? "Your plate is clear" : "No dates on the board yet"}</b>${mine ? "Open a file, add a step, give it your name and a date. It lands here and you tick it off in one tap." : "Give steps a date inside any file. They line up here by deadline so the whole crew sees what's next."}</div>`;
+  const P = S.roster.projects || [];
+  if (P.length){
+    h += `<div class="un-projs"><span class="tag-m">Projects</span>` + P.map(p => {
+      let d = 0, a = 0;
+      for (const t of S.threads) if ((t.project || "") === p.id){ const st = stepsOf(t); if (st.length){ a += st.length; d += st.filter(x => x.done).length; } else { a++; if (topicDone(t)) d++; } }
+      const w = a ? Math.round(d / a * 100) : 0;
+      return `<button type="button" class="un-p" data-project="${esc(p.id)}" style="--pc:${cup(p.color).c}" aria-label="${esc(p.name)}: ${w}% done"><span class="n">${esc(p.name)}</span><span class="c"><b>${d}</b>/${a} · ${w}%</span><span class="bar"><i style="width:${w}%"></i></span></button>`;
+    }).join("") + `</div>`;
   }
-  ev.sort((a, b) => b.at - a.at);
-  const top = ev.slice(0, 10);
-  $("#live").innerHTML = top.length ? top.map(e => {
-    const s = seatById(e.seat); const who = `<b>${esc(seatName(s))}</b>`;
-    let body = "", attr = "";
-    if (e.type === "topic"){ attr = `data-open="${esc(e.t.id)}"`; body = `${who} put a <span class="k-${esc(e.t.kind)}">${esc((KINDS[e.t.kind] || KINDS.note).label.toLowerCase())}</span> on the table<span class="ex">${esc(e.t.title)}</span>`; }
-    else if (e.type === "decided"){ attr = `data-open="${esc(e.t.id)}"`; body = `${who} made the call<span class="ex">${esc((e.t.options || [])[e.t.decided] || e.t.title)}</span>`; }
-    else if (e.type === "reply"){ attr = `data-open="${esc(e.t.id)}"`; body = `${who} replied on ${e.t.no ? "File " + topicNo(e.t) : "a topic"}<span class="ex">${esc(e.text)}</span>`; }
-    else if (e.type === "check"){ const st = DOCK[e.state] || DOCK.remote; attr = `data-chan="daily"`; body = `${who} <span class="st-${st.cls}">${st.line}</span>${e.text ? `<span class="ex">${esc(e.text)}</span>` : ""}`; }
-    else if (e.type === "dm"){ attr = `data-chan="${esc(e.ch)}"`; body = (e.seat === S.mySeat ? `You → <b>${esc(seatName(e.other))}</b> <span class="private-tag">private</span>` : `${who} <span class="private-tag">messaged you</span>`) + `<span class="ex">${esc(e.text)}</span>`; }
-    else { attr = `data-chan="${esc(e.ch)}"`; body = `${who} in #${esc(e.n)}<span class="ex">${esc(e.text)}</span>`; }
-    return `<button type="button" class="lw" ${attr}><span class="mono">${ago(e.at)}</span>${medal(s, 22)}<span>${body}</span></button>`;
-  }).join("") : `<div class="live-empty">Quiet so far. The first message, check-in or topic lights this up.</div>`;
+  $("#live").innerHTML = h;
 }
 function renderTopics(){
   const open = S.threads.filter(t => !topicDone(t)).length;
@@ -1756,7 +1956,7 @@ function renderDrawer(){
   const repsHTML = reps.map(r => {
     const s = seatById(r.seat);
     const own = isMineBy(r.by, r.seat) && r.docId.endsWith("__" + myKey());
-    return `<div class="reply">${medal(s, 34)}<div><div class="reply-h"><b>${esc(seatName(s))}</b>${seatSub(s) ? `<span class="role">${esc(seatSub(s))}</span>` : ""}<span class="mono">${ago(r.at)}</span>${own ? `<button class="del" data-del-reply="${esc(r.docId)}|${esc(r.id)}">Delete</button>` : ""}</div><div class="reply-t">${rich(r.text)}</div></div></div>`;
+    return `<div class="reply">${medal(s, 34)}<div><div class="reply-h"><b>${esc(seatName(s))}</b>${seatSub(s) ? `<span class="role">${esc(seatSub(s))}</span>` : ""}<span class="mono">${ago(r.at)}</span>${own ? `<button class="del" data-del-reply="${esc(r.docId)}|${esc(r.id)}">Delete</button>` : ""}</div>${r.text ? `<div class="reply-t">${rich(r.text)}</div>` : ""}${mediaHTML(r.media)}</div></div>`;
   }).join("");
   const P = S.roster.projects || [], st = stepsOf(t), pr = progress(t), can = canPost();
   const plan = `<div class="d-plan">
@@ -1776,12 +1976,13 @@ function renderDrawer(){
   body.innerHTML = `${t.no ? `<span class="d-no" aria-hidden="true">${pad2(t.no)}</span>` : ""}<h2 class="d-title">${esc(t.title)}</h2>
     <div class="d-meta">${medal(author, 38)}<div class="who"><b>${esc(seatName(author))}</b><span>${esc(seatSub(author) || "")}${seatSub(author) ? " · " : ""}${dayLabel(t.at)}, ${clock(t.at)}</span></div>
     ${(t.to || []).length ? `<span class="spacer"></span><div class="to"><span class="tag-m">${k === "question" ? "Asking" : "For"}</span>${t.to.map(chipSeat).join("")}</div>` : ""}</div>
-    ${t.body ? `<div class="d-text">${rich(t.body)}</div>` : ""}
+    ${t.body ? `<div class="d-text">${rich(t.body)}</div>` : ""}${mediaHTML(t.media)}
     ${block}${plan}${reacts}
     <div class="r-sep tag-m">${reps.length ? plural(reps.length, "reply", "replies") : "No replies yet"}</div>
     ${repsHTML}`;
   Object.entries(keepV).forEach(([id, v]) => { const x = document.getElementById(id); if (x) x.value = v; });
   if (keepF){ const x = document.getElementById(keepF.id); if (x){ x.focus({preventScroll:true}); try { if (keepF.s != null) x.setSelectionRange(keepF.s, keepF.e); } catch (e){} } }
+  hydrateMedia(body);
   if (S.stickDrawer || (atBottom && S.growDrawer)){ body.scrollTop = body.scrollHeight; } else body.scrollTop = keep;
   S.stickDrawer = false; S.growDrawer = false;
   const inp = $("#d-input"); inp.disabled = !canPost();
@@ -1789,7 +1990,7 @@ function renderDrawer(){
   S.seen.t[t.id] = Date.now(); saveSeen();
 }
 function openThread(id){
-  if (S.openId !== id){ const di = $("#d-input"); di.value = ""; di.dispatchEvent(new Event("input")); }
+  if (S.openId !== id){ const di = $("#d-input"); di.value = ""; clearAtt("d"); di.dispatchEvent(new Event("input")); }
   S.openId = id; S.stickDrawer = false;
   const d = $("#drawer"); d.classList.add("open"); d.setAttribute("aria-hidden", "false");
   $("#scrim").classList.add("on");
@@ -2000,7 +2201,7 @@ function writeErr(e){
 async function createThread(data){
   const id = rid("t");
   const no = S.threads.reduce((m, t) => Math.max(m, t.no || 0), 0) + 1;
-  const doc = {no, kind:data.kind, title:data.title, body:data.body, to:data.to, seat:S.mySeat, by:S.uid || null, at:Date.now(), status:data.kind === "idea" ? "new" : "open", pinned:false, project:data.project || null, owner:data.owner || null, due:data.due || null, steps:[]};
+  const doc = {no, kind:data.kind, title:data.title, body:data.body, media:data.media || [], to:data.to, seat:S.mySeat, by:S.uid || null, at:Date.now(), status:data.kind === "idea" ? "new" : "open", pinned:false, project:data.project || null, owner:data.owner || null, due:data.due || null, steps:[]};
   if (data.kind === "decision"){ doc.options = data.options; doc.decided = null; }
   try { await S.db.doc("threads/" + id).set(doc); toast("Posted to the board"); return id; } catch (e){ writeErr(e); return null; }
 }
@@ -2036,10 +2237,12 @@ function sendChat(text){
   S.stickChat = true;
   return appendItem("chatDocs", "chat", id, {ch:S.channel, wk, by:S.uid || null}, {id:rid("m"), at:Date.now(), seat:S.mySeat, text});
 }
-function sendReply(tid, text){
+function sendReply(tid, text, media){
   const id = `${tid}__${myKey()}`;
   S.stickDrawer = true;
-  return appendItem("replyDocs", "replies", id, {thread:tid, by:S.uid || null}, {id:rid("r"), at:Date.now(), seat:S.mySeat, text});
+  const item = {id:rid("r"), at:Date.now(), seat:S.mySeat, text};
+  if (media && media.length) item.media = media;
+  return appendItem("replyDocs", "replies", id, {thread:tid, by:S.uid || null}, item);
 }
 function editMarks(fn){
   const id = myKey();
@@ -2088,11 +2291,12 @@ function attachMention(ta){
   });
   pop.addEventListener("mousedown", e => { const b = e.target.closest("button"); if (b){ e.preventDefault(); pick(+b.dataset.i); } });
 }
-function wireComposer(ta, btn, onSend, onType){
+function wireComposer(ta, btn, onSend, onType, extra){
   btn.innerHTML = I.send;
   attachMention(ta);
-  const sync = () => { btn.disabled = !ta.value.trim() || ta.disabled; autoGrow(ta); };
-  const go = () => { const v = ta.value.trim(); if (!v || ta.disabled) return; onSend(v.slice(0, 4000)); ta.value = ""; sync(); };
+  const has = () => !!ta.value.trim() || !!(extra && extra.ready());
+  const sync = () => { btn.disabled = !has() || ta.disabled || !!(extra && extra.busy()); autoGrow(ta); };
+  const go = () => { const v = ta.value.trim(); if (!has() || ta.disabled || (extra && extra.busy())) return; onSend(v.slice(0, 4000)); ta.value = ""; sync(); };
   ta.addEventListener("input", () => { sync(); onType && onType(); });
   ta.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey && !e.isComposing){ e.preventDefault(); go(); } });
   btn.addEventListener("click", go);
@@ -2106,7 +2310,7 @@ function openNew(kind){
   if (!canPost()) return;
   S.newKind = KINDS[kind] ? kind : "question";
   $("#nt-kinds").innerHTML = KIND_ORDER.map(k => `<label style="--kc:var(--k-${k})"><input type="radio" name="nt-kind" value="${k}" ${k === S.newKind ? "checked" : ""}>${kbadge(k)}${KINDS[k].label}</label>`).join("");
-  $("#nt-title").value = ""; $("#nt-body").value = "";
+  $("#nt-title").value = ""; $("#nt-body").value = ""; clearAtt("nt");
   $("#nt-opts").innerHTML = ""; addOpt(); addOpt();
   $("#nt-proj").innerHTML = [["", "None"], ...(S.roster.projects || []).map(p => [p.id, p.name, p.color])].map(([id, n, c]) => `<button type="button" class="chip${c ? " pchip" : ""}" data-ntproj="${esc(id)}" aria-pressed="${(S.project !== "all" ? S.project : "") === id}" ${c ? `style="--pc:${cup(c).c}"` : ""}>${esc(n)}</button>`).join("");
   $("#nt-owner").innerHTML = `<option value="">Nobody yet</option>` + seats().map(s => `<option value="${esc(s.id)}">${esc(seatName(s))}</option>`).join("");
@@ -2201,6 +2405,11 @@ document.addEventListener("click", e => {
   if ((el = q("[data-mecolor]"))){ S.meColor = el.dataset.mecolor; renderMe(); return; }
   if ((el = q("[data-close-me]"))){ closeMe(); return; }
   if ((el = q("[data-dock]"))){ const mine = myDock(); if (!(mine && mine.state === el.dataset.dock)) dock(el.dataset.dock); return; }
+  if ((el = q("[data-media]"))){ if (S.media) openLightbox(el.dataset.media, el.dataset.mkind); return; }
+  if ((el = q("[data-att-rm]"))){ const [w, key] = el.dataset.attRm.split("|"); const a = S.att[w].find(x => x.key === key); if (a){ URL.revokeObjectURL(a.local); if (a.ref && S.media) S.media.del(a.ref.id); S.att[w] = S.att[w].filter(x => x !== a); renderAtt(w); } return; }
+  if ((el = q("[data-un-step]"))){ const [tid, sid] = el.dataset.unStep.split("|"); const th = S.threads.find(x => x.id === tid); if (th && canPost()) updateThread(th.id, {steps:stepsOf(th).map(x => x.id === sid ? {...x, done:!x.done, doneAt:Date.now()} : x)}); return; }
+  if ((el = q("[data-un-scope]"))){ S.unScope = el.dataset.unScope; LS.set("unScope", S.unScope); S.unAll = false; schedule(); return; }
+  if ((el = q("[data-un-more]"))){ S.unAll = !S.unAll; schedule(); return; }
   if ((el = q("[data-view]"))){ go(el.dataset.view); return; }
   if ((el = q("[data-chan]"))){ S.channel = el.dataset.chan; if (!S.channel.startsWith("dm-")) S.lastChan = S.channel; go("chat"); return; }
   if ((el = q("[data-new]"))){ openNew(el.dataset.new); return; }
@@ -2352,7 +2561,8 @@ $("#nt-add-opt").addEventListener("click", addOpt);
 $("#nt-form").addEventListener("submit", async e => {
   e.preventDefault();
   const title = $("#nt-title").value.trim(); if (!title) return;
-  const data = {kind:S.newKind, title, body:$("#nt-body").value.trim(), to:[...document.querySelectorAll('#nt-to [aria-pressed="true"]')].map(b => b.dataset.to)};
+  if (attBusy("nt")){ toast("Wait for the upload to finish."); return; }
+  const data = {kind:S.newKind, title, body:$("#nt-body").value.trim(), media:attReady("nt"), to:[...document.querySelectorAll('#nt-to [aria-pressed="true"]')].map(b => b.dataset.to)};
   const pb = document.querySelector('#nt-proj [aria-pressed="true"]');
   data.project = (pb && pb.dataset.ntproj) || null; data.owner = $("#nt-owner").value || null; data.due = $("#nt-due").value || null;
   if (data.kind === "decision"){
@@ -2362,10 +2572,16 @@ $("#nt-form").addEventListener("submit", async e => {
   const btn = $("#nt-submit"); btn.disabled = true;
   const id = await createThread(data);
   btn.disabled = false;
-  if (id){ closeModal(); if (S.view !== "topics") go("topics"); }
+  if (id){ clearAtt("nt", true); closeModal(); if (S.view !== "topics") go("topics"); }
 });
 wireComposer($("#chat-input"), $("#chat-send"), v => { if (canPost()){ sendChat(v); setPresence({typing:null}); } }, typing);
-wireComposer($("#d-input"), $("#d-send"), v => { if (canPost() && S.openId) sendReply(S.openId, v); });
+wireComposer($("#d-input"), $("#d-send"), v => { if (canPost() && S.openId){ sendReply(S.openId, v, attReady("d")); clearAtt("d", true); } }, null, {ready:() => attReady("d").length > 0, busy:() => attBusy("d")});
+$("#d-clip").innerHTML = I.clip;
+document.addEventListener("change", e => {
+  if (e.target && (e.target.id === "d-file" || e.target.id === "nt-file")){ const w = e.target.id === "d-file" ? "d" : "nt"; const fl = [...(e.target.files || [])]; e.target.value = ""; if (w === "d" && !canPost()) return; addFiles(w, fl); }
+});
+document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("#lb").hidden){ e.stopPropagation(); closeLightbox(); } }, true);
+$("#lb").addEventListener("click", e => { if (e.target.id === "lb" || e.target.closest("[data-lb-close]")) closeLightbox(); });
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") schedule(); });
 setInterval(schedule, 60e3);
 
@@ -2377,7 +2593,8 @@ function onDbErr(e){
 function mapSnap(snap){ const m = new Map(); for (const d of snap.docs) m.set(d.id, {...d.data(), id:d.id}); return m; }
 async function connect(){
   const use = n => (window.claude && typeof window.claude.use === "function") ? window.claude.use(n).catch(() => null) : Promise.resolve(null);
-  const [db, user, room] = await Promise.all([use("db"), use("user"), use("room")]);
+  const [db, user, room, media] = await Promise.all([use("db"), use("user"), use("room"), use("media")]);
+  S.media = media || null;
   if (user){
     S.user = user;
     try {

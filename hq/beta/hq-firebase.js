@@ -1,7 +1,7 @@
 /* Smart Cup HQ: Firebase backend for the room.
    The room's page code was written for claude.ai's db / user / room capabilities; this module serves
    the same small API (doc/collection with get/set/update/delete/onSnapshot/orderBy/add, user.me/can/profiles,
-   room.presence/onPeers) from Firestore, behind an email sign-in limited to the team. */
+   room.presence/onPeers, plus media for photos and videos) from Firestore, behind an email sign-in limited to the team. */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import { getAuth, onAuthStateChanged, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, collection, getDoc, setDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy, addDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
@@ -68,6 +68,76 @@ function mkCol(path, order){
   };
 }
 const db = {doc:mkDoc, collection:mkCol};
+
+/* ---------- media: photos and videos, kept in Firestore in <1 MB base64 chunks (no paid Storage needed) ---------- */
+const CHUNK = 720000, VIDEO_MAX = 30 * 1024 * 1024;
+const mediaCache = new Map();
+function b64(u8){ let s = ""; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); }
+function unb64(s){ const b = atob(s), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; }
+async function shrinkImage(file){
+  try {
+    const bmp = await createImageBitmap(file, {imageOrientation:"from-image"});
+    const k = Math.min(1, 1600 / Math.max(bmp.width, bmp.height)), w = Math.round(bmp.width * k), h = Math.round(bmp.height * k);
+    const c = document.createElement("canvas"); c.width = w; c.height = h; c.getContext("2d").drawImage(bmp, 0, 0, w, h);
+    const blob = await new Promise(r => c.toBlob(r, "image/jpeg", .84));
+    if (blob) return {blob, type:"image/jpeg", w, h};
+  } catch (e){}
+  if (file.size > 4 * 1024 * 1024) throw {code:"unsupported", message:"This photo format can't be read here. Try a JPG or PNG."};
+  return {blob:file, type:file.type || "image/jpeg", w:0, h:0};
+}
+function videoPoster(file){
+  return new Promise(res => {
+    const v = document.createElement("video"), url = URL.createObjectURL(file); let done = false;
+    const fin = x => { if (done) return; done = true; URL.revokeObjectURL(url); res(x); };
+    setTimeout(() => fin({poster:null, w:0, h:0}), 5000);
+    v.muted = true; v.playsInline = true; v.preload = "auto"; v.src = url;
+    v.addEventListener("loadeddata", () => { try { v.currentTime = Math.min(.5, (v.duration || 1) / 3); } catch (e){ fin({poster:null, w:0, h:0}); } }, {once:true});
+    v.addEventListener("seeked", () => {
+      try {
+        const k = Math.min(1, 480 / Math.max(v.videoWidth, v.videoHeight)), w = Math.round(v.videoWidth * k), h = Math.round(v.videoHeight * k);
+        const c = document.createElement("canvas"); c.width = w; c.height = h; c.getContext("2d").drawImage(v, 0, 0, w, h);
+        fin({poster:c.toDataURL("image/jpeg", .7), w:v.videoWidth, h:v.videoHeight, dur:v.duration || 0});
+      } catch (e){ fin({poster:null, w:0, h:0}); }
+    }, {once:true});
+    v.addEventListener("error", () => fin({poster:null, w:0, h:0}), {once:true});
+  });
+}
+function mkMedia(uid){
+  return {
+    maxVideo: VIDEO_MAX,
+    async put(file, onProgress){
+      const isV = /^video\//.test(file.type);
+      if (!isV && !/^image\//.test(file.type)) throw {code:"unsupported", message:"Only photos and videos."};
+      if (isV && file.size > VIDEO_MAX) throw {code:"too_big", message:"Videos can be up to 30 MB."};
+      const p = isV ? {blob:file, type:file.type || "video/mp4", ...(await videoPoster(file))} : await shrinkImage(file);
+      const u8 = new Uint8Array(await p.blob.arrayBuffer()), n = Math.max(1, Math.ceil(u8.length / CHUNK));
+      const id = "m" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+      let sent = 0, next = 0;
+      const work = async () => { while (next < n){ const i = next++; await setDoc(doc(fs, "media", id, "c", String(i)), {d:b64(u8.subarray(i * CHUNK, (i + 1) * CHUNK))}); sent++; if (onProgress) onProgress(sent / n); } };
+      try { await Promise.all([work(), work(), work()]); } catch (e){ throw mapErr(e); }
+      const meta = {kind:isV ? "video" : "image", type:p.type, name:String(file.name || "").slice(0, 120), size:u8.length, n, w:p.w || 0, h:p.h || 0, poster:p.poster || null, dur:p.dur || 0, at:Date.now(), by:uid};
+      await setDoc(doc(fs, "media", id), meta).catch(fail);
+      mediaCache.set(id, Promise.resolve(URL.createObjectURL(new Blob([u8], {type:p.type}))));
+      return {id, kind:meta.kind, w:meta.w, h:meta.h, poster:meta.poster, name:meta.name};
+    },
+    url(id){
+      if (!mediaCache.has(id)){
+        const pr = (async () => {
+          const m = await getDoc(doc(fs, "media", id)); if (!m.exists()) throw {code:"not_found"};
+          const meta = m.data();
+          const parts = await Promise.all(Array.from({length:meta.n}, (_, i) => getDoc(doc(fs, "media", id, "c", String(i))).then(s => unb64(s.data().d))));
+          return URL.createObjectURL(new Blob(parts, {type:meta.type}));
+        })();
+        pr.catch(() => mediaCache.delete(id));
+        mediaCache.set(id, pr);
+      }
+      return mediaCache.get(id);
+    },
+    async del(id){
+      try { const m = await getDoc(doc(fs, "media", id)); const n = m.exists() ? m.data().n : 0; await deleteDoc(doc(fs, "media", id)); for (let i = 0; i < n; i++) await deleteDoc(doc(fs, "media", id, "c", String(i))); } catch (e){}
+    }
+  };
+}
 
 /* ---------- people (names for the admin's "who sits here") ---------- */
 const people = {};
@@ -171,7 +241,7 @@ onAuthStateChanged(auth, async user => {
     profiles: async ids => { const o = {}; (ids || []).forEach(id => { const p = people[id]; o[id] = {id, name:p ? (p.name || p.email || "") : "", isMe:id === uid, guest:false}; }); return o; },
     search: async () => []
   };
-  window.__hqResolve({db, user:userApi, room:mkRoom(uid)});
+  window.__hqResolve({db, user:userApi, room:mkRoom(uid), media:mkMedia(uid)});
   const so = $("hq-signout"); if (so) so.addEventListener("click", async () => { await signOut(auth); location.reload(); });
 });
 finishEmailLink();
